@@ -115,15 +115,15 @@ const RouteMap = () => {
         </div>
       </div>
       <div id="map" style={{ height: "400px", width: "100%" }} />
-      <div className="col-md-6 my-4">
+      <div className="col-md-12 my-4">
         <h3>Total Distance:</h3>
         <input
           type="text"
           disabled
           value={`${totalDistance.toFixed(2)} km`}
         />
-      </div>
-      <button onClick={saveRoute} className="btn btn-outline-primary" style={{ marginTop: "20px" }}>Save Route</button>
+      
+      <button onClick={saveRoute} className="btn btn-outline-primary" style={{ marginTop: "5px" }}>Save Route</button>
       <div style={{ marginTop: "20px" }}>
         <h3>Share Your Route:</h3>
         <ul>
@@ -136,7 +136,7 @@ const RouteMap = () => {
           ))}
         </ul>
       </div>
-      <div style={{ marginTop: "20px" }}>
+      <div style={{ marginTop: "9px" }}>
         <WhatsappShareButton url={window.location.href} title="Check out this route">
           <button className="btn btn-outline-success">Share via WhatsApp</button>
         </WhatsappShareButton>
@@ -146,6 +146,7 @@ const RouteMap = () => {
         <InstapaperShareButton url={window.location.href} title="Check out this route">
           <button className="btn btn-outline-secondary">Share via Instagram</button>
         </InstapaperShareButton>
+      </div>
       </div>
     </div>
   );
