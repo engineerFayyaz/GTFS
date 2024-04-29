@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "./map.css"
+import "./map.css";
 import { WhatsappShareButton, FacebookShareButton, InstapaperShareButton } from 'react-share';
 
 const RouteMap = () => {
@@ -7,8 +7,7 @@ const RouteMap = () => {
   const [routes, setRoutes] = useState([]);
   const [totalDistance, setTotalDistance] = useState(0);
   const [viewOption, setViewOption] = useState("Map");
-
-  const [routeUrl, setRouteUrl] = useState(window.location.href); // Get the current URL
+  const [markedPoints, setMarkedPoints] = useState([]);
 
   useEffect(() => {
     // Load Google Maps API script
@@ -64,6 +63,12 @@ const RouteMap = () => {
         }
       }
     );
+
+    // Add event listener for click on map to mark points
+    google.maps.event.addListener(newMap, "click", (event) => {
+      const clickedLatLng = event.latLng;
+      setMarkedPoints([...markedPoints, clickedLatLng]);
+    });
   };
 
   const saveRoute = () => {
@@ -99,7 +104,7 @@ const RouteMap = () => {
         </div>
       </div>
       <div className="row flex-wrap d-flex justify-content-around align-items-center ">
-        <div className="col-md-6  my-4">
+        <div className="col-md-6 my-4">
           <h3>View Options:</h3>
           <button onClick={() => changeViewOption("Map")} className="btn btn-outline-dark">Map</button>
           <button onClick={() => changeViewOption("Hybrid")} className="btn btn-outline-info">Hybrid</button>
@@ -120,13 +125,25 @@ const RouteMap = () => {
       </div>
       <button onClick={saveRoute} className="btn btn-outline-primary" style={{ marginTop: "20px" }}>Save Route</button>
       <div style={{ marginTop: "20px" }}>
-        <WhatsappShareButton url={routeUrl} title="Check out this route">
+        <h3>Share Your Route:</h3>
+        <ul>
+          {markedPoints.map((point, index) => (
+            <li key={index}>
+              <a href={`https://www.google.com/maps/search/?api=1&query=${point.lat()},${point.lng()}`} target="_blank" rel="noopener noreferrer">
+                Marked Point {index + 1}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div style={{ marginTop: "20px" }}>
+        <WhatsappShareButton url={window.location.href} title="Check out this route">
           <button className="btn btn-outline-success">Share via WhatsApp</button>
         </WhatsappShareButton>
-        <FacebookShareButton url={routeUrl} quote="Check out this route">
+        <FacebookShareButton url={window.location.href} quote="Check out this route">
           <button className="btn btn-outline-primary">Share via Facebook</button>
         </FacebookShareButton>
-        <InstapaperShareButton url={routeUrl} title="Check out this route">
+        <InstapaperShareButton url={window.location.href} title="Check out this route">
           <button className="btn btn-outline-secondary">Share via Instagram</button>
         </InstapaperShareButton>
       </div>
