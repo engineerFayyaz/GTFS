@@ -8,6 +8,7 @@ import T1Banner from "../../Components/T1banner";
 import TransitInformation from "../../Components/TransitInformation";
 import TransitCards from "../../Components/TransitCards";
 import FollowUs from "../../Components/FollowUs";
+import TransitTwoImages from "../../Components/TransitTwoImages";
 
 const T5GTFSRealtime = () => {
     return (
@@ -108,25 +109,14 @@ const T5GTFSRealtime = () => {
                 </div>
             </div>
 
-            <div className="two-images-section overflow-hidden">
-                <div className="row p-5 g-3">
-                    <div className="col-lg-6 t3-schedule text-light d-flex justify-content-center align-items-center flex-column">
-                        <h4>Learn more about GTFS data</h4>
-                        <h1>T5 GTFS Static</h1>
-                        <a href="t4.html">
-                            <button className="btn-two-images-section">Learn more</button>
-                        </a>
-                        {/* <img src="/images/images-entour/performance.png" alt=""> */}
-                    </div>
-                    <div className="col-lg-6 text-light t4-gtfs-static d-flex justify-content-center align-items-center flex-column">
-                        <h4>More riders. More revenue.</h4>
-                        <h1>T6 GTFS Realtime</h1>
-                        <a href="t5.html">
-                            <button className="btn-two-images-section">Learn more</button>
-                        </a>
-                    </div>
-                </div>
-            </div>
+        <TransitTwoImages
+          subtitle1="Insights into public transport"
+          title1="T6 Operations"
+          btn1link="/t6operations"
+          subtitle2="Make transit data available"
+          title2="For Authorities"
+          btn2link="/forauthorities"
+        />
             {/* social media icons */}
         <FollowUs />
             <Footer />

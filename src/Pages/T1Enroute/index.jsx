@@ -97,8 +97,8 @@ const T1Enroute = () => {
         subtitle2="Create GTFS schedules"
         title1="T2 Performance"
         title2="T3 Schedules"
-        btn1link="javascript:void(0)"
-        btn2link="javascript:void(0)"
+        btn1link="/t2Performance"
+        btn2link="/t3Schedules"
         />
         {/* social media icons */}
        <FollowUs />

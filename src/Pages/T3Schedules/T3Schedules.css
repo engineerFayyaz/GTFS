@@ -10,6 +10,18 @@
  background: linear-gradient(250deg, #023460, #1c2331 80%);
 
   }
+  .images-text .Apply{
+    background: transparent;
+    color: white;
+    border: 2px solid white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    transition: all .3s ease;
+  }
+  .images-text .Apply:hover{
+    background: black;
+    border-color: black;
+  }
   .images-text .side-image img {
     height: 300px;
     width: auto;

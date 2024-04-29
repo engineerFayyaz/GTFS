@@ -11,6 +11,7 @@ import Subscribe from "../../Components/Subscribe";
 import Footer from "../../Components/Footer";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import UserHeader from "../../Components/UserHeader";
 
 const Home = () => {
   useEffect(() => {
@@ -18,7 +19,8 @@ const Home = () => {
   }, [])
   return (
     <>
-      <Header />
+      {/* <Header /> */}
+      <UserHeader />
       <HomeSlider  />
       <Services />
       <RouteMap />

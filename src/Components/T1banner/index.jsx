@@ -10,7 +10,7 @@ const T1Banner = ({title, subtitle,subtitle2, subtitle3,btnlink,btntext,imgsrc})
             <h1>{subtitle}</h1>
             <h1>{subtitle2}</h1>
             <h1>{subtitle3}</h1>
-            <a href={btnlink}>
+            <a href="/demo">
               <button className="banner-btn">{btntext}</button>
             </a>
           </div>

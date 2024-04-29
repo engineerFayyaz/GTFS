@@ -111,28 +111,28 @@ const Footer = () => {
                     </h3>
                     <ul className="links list-unstyled">
                       <li>
-                        <a href="/t1enroute"> T1 Enroute </a>
+                        <a href="/t1enroute">  Enroute </a>
                       </li>
                       <li>
-                        <a href="/t2performance">T2 Performance </a>
+                        <a href="/t2performance"> Performance </a>
                       </li>
                       <li>
-                        <a href="/t3Schedules">T3 Schedules </a>
+                        <a href="/t3Schedules"> Schedules </a>
                       </li>
                       <li>
-                        <a href="/t4GTFSStatic">T4 GTFS Static </a>
+                        <a href="/t4GTFSStatic"> GTFS Static </a>
                       </li>
                       <li>
-                        <a href="/t5GTFSRealtime">T5 GTFS Realtime </a>
+                        <a href="/t5GTFSRealtime"> GTFS Realtime </a>
                       </li>
                       <li>
-                        <a href="/t6Operations">T6 Operations </a>
+                        <a href="/t6Operations"> Operations </a>
                       </li>
                       <li>
-                        <a href="/t7Insights">T7 Insights </a>
+                        <a href="/t7Insights"> Insights </a>
                       </li>
                       <li>
-                        <a href="/t8Governance">T8 Governance </a>
+                        <a href="/t8Governance"> Governance </a>
                       </li>
                     </ul>
                   </div>

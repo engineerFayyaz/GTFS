@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { app } from "../../FirebaseConfig"
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, TwitterAuthProvider, signInWithRedirect } from "firebase/auth";
 import "./signin.css";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Loader from "../../Components/Loader";
 
 const SignIn = () => {
   const auth = getAuth(app);
@@ -15,6 +16,8 @@ const SignIn = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [country, setCountry] = useState("");
+  const [loading,setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
     const sign_in_btn = document.querySelector("#sign-in-btn");
@@ -33,9 +36,13 @@ const SignIn = () => {
   const handleSignIn = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       await signInWithEmailAndPassword(auth, email, password); // Updated function call
-      navigate("/");
-      toast.success("LogedIn Successfully ");
+      toast.success(`Welcome ${email}`);
+      setLoading(false);
+      setTimeout(() => {
+        navigate("/");
+      },1000)
     } catch (error) {
       console.error(error.message);
       toast.error("Invalid Login, Please try Again");
@@ -46,9 +53,13 @@ const SignIn = () => {
   const handleSignUp = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       await createUserWithEmailAndPassword(auth, email, password); // Updated function call
-      navigate("/");
       toast.success("Signup Successfully ");
+      setLoading(false);
+      setTimeout(() => {
+        navigate("/");
+      },1000)
     } catch (error) {
       console.error(error.message);
       // Handle sign-up errors (e.g., display error message)
@@ -58,7 +69,9 @@ const SignIn = () => {
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
+      setGoogleLoading(true);
       const result = await signInWithPopup(auth, provider);
+      setGoogleLoading(false);
       navigate("/");
       toast.success("Logged In with Google Successfully");
     } catch (error) {
@@ -93,6 +106,8 @@ const SignIn = () => {
 
   return (
     <>
+
+    <ToastContainer />
       <div className="auth-container">
         <div className="forms-container">
           <div className="signin-signup">

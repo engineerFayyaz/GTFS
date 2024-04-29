@@ -19,6 +19,10 @@ import UserFaq from "./Pages/UserFaq";
 import DataGarenteeFaq from "./Pages/DataGarenteeFaq";
 import TermsOfUse from "./Pages/TermofUse";
 import Resources from "./Pages/Resources";
+import Demo from "./Pages/Demo"
+import ForAuthorities from "./Pages/ForAuthorities";
+import ForOperators from "./Pages/ForOperators";
+import Partner from "./Pages/Partner";
 // import Home from "./Pages/Home";
 
 const ProjectRoutes = () => {
@@ -46,6 +50,10 @@ const ProjectRoutes = () => {
             <Route path="/UserFaq" element={<UserFaq />} />
             <Route path="/DataGarenteeFaq" element={<DataGarenteeFaq />} />
             <Route path="/TermOfUse" element={<TermsOfUse />} />
+            <Route path="/Demo" element={<Demo />} />
+            <Route path="/ForAuthorities" element={<ForAuthorities />} />
+            <Route path="/ForOperators" element={<ForOperators />} />
+            <Route path="/Partner" element={<Partner />} />
           </Routes>
         </Router>
       </React.Suspense>
