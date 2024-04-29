@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import "./map.css"
+import { WhatsappShareButton, FacebookShareButton, InstapaperShareButton } from 'react-share';
+
 const RouteMap = () => {
   const [map, setMap] = useState(null);
   const [routes, setRoutes] = useState([]);
   const [totalDistance, setTotalDistance] = useState(0);
   const [viewOption, setViewOption] = useState("Map");
+
+  const [routeUrl, setRouteUrl] = useState(window.location.href); // Get the current URL
 
   useEffect(() => {
     // Load Google Maps API script
@@ -62,6 +66,12 @@ const RouteMap = () => {
     );
   };
 
+  const saveRoute = () => {
+    // Assuming routes are an array of arrays of LatLng objects
+    localStorage.setItem('savedRoutes', JSON.stringify(routes));
+    alert('Route saved successfully!');
+  };
+
   const calculateDistance = (path) => {
     const google = window.google;
     let distance = 0;
@@ -83,30 +93,43 @@ const RouteMap = () => {
 
   return (
     <div className="map-container container">
-      <div class="row mb-5 justify-content-center aos-init aos-animate" data-aos="fade-right"><div class="col-lg-6 text-center"><h2 class="section-title text-center mb-3 aos-init aos-animate" data-aos="fade-up">Route Planner</h2></div></div>
-      <div className="row flex-wrap  d-flex justify-content-around align-items-center ">
+      <div className="row mb-5 justify-content-center aos-init aos-animate" data-aos="fade-right">
+        <div className="col-lg-6 text-center">
+          <h2 className="section-title text-center mb-3 aos-init aos-animate" data-aos="fade-up">Route Planner</h2>
+        </div>
+      </div>
+      <div className="row flex-wrap d-flex justify-content-around align-items-center ">
         <div className="col-md-6  my-4">
           <h3>View Options:</h3>
-          <button onClick={() => changeViewOption("Map")} className="btn btn-outline-dark  ">Map</button>
-          <button onClick={() => changeViewOption("Hybrid")} className="btn btn-outline-info  ">Hybrid</button>
-          <button onClick={() => changeViewOption("Satellite")} className="btn btn-outline-danger  ">
+          <button onClick={() => changeViewOption("Map")} className="btn btn-outline-dark">Map</button>
+          <button onClick={() => changeViewOption("Hybrid")} className="btn btn-outline-info">Hybrid</button>
+          <button onClick={() => changeViewOption("Satellite")} className="btn btn-outline-danger">
             Satellite
           </button>
-          <button onClick={() => changeViewOption("Terrain")} className="btn btn-outline-success " >Terrain</button>
+          <button onClick={() => changeViewOption("Terrain")} className="btn btn-outline-success">Terrain</button>
         </div>
-        <div className="col-md-6 my-4">
-        <h3>
-          Total Distance:{" "}
-        </h3>
-        <input
-            type="text"
-            disabled
-            value={`${totalDistance.toFixed(2)} km`}
-          />
-        </div>
-        
       </div>
       <div id="map" style={{ height: "400px", width: "100%" }} />
+      <div className="col-md-6 my-4">
+        <h3>Total Distance:</h3>
+        <input
+          type="text"
+          disabled
+          value={`${totalDistance.toFixed(2)} km`}
+        />
+      </div>
+      <button onClick={saveRoute} className="btn btn-outline-primary" style={{ marginTop: "20px" }}>Save Route</button>
+      <div style={{ marginTop: "20px" }}>
+        <WhatsappShareButton url={routeUrl} title="Check out this route">
+          <button className="btn btn-outline-success">Share via WhatsApp</button>
+        </WhatsappShareButton>
+        <FacebookShareButton url={routeUrl} quote="Check out this route">
+          <button className="btn btn-outline-primary">Share via Facebook</button>
+        </FacebookShareButton>
+        <InstapaperShareButton url={routeUrl} title="Check out this route">
+          <button className="btn btn-outline-secondary">Share via Instagram</button>
+        </InstapaperShareButton>
+      </div>
     </div>
   );
 };
