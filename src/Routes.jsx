@@ -1,5 +1,4 @@
 import React from "react";
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./Pages/Home";
 import T1Enroute from "./Pages/T1Enroute";
@@ -47,8 +46,6 @@ const ProjectRoutes = () => {
             <Route path="/UserFaq" element={<UserFaq />} />
             <Route path="/DataGarenteeFaq" element={<DataGarenteeFaq />} />
             <Route path="/TermOfUse" element={<TermsOfUse />} />
-
-
           </Routes>
         </Router>
       </React.Suspense>
