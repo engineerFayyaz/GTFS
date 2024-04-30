@@ -1,7 +1,26 @@
-import React from "react";
-
+import React, { useState, useEffect } from "react";
+import { getUserFromLocalStorage } from "../../storage/loggedInUserLocalSt"
 const Header = () => {
+  const [loggedInUser, setLoggedInUser] = useState(null);
+
+  useEffect(() => {
+    let u = getUserFromLocalStorage();
+
+    setLoggedInUser(u)
+
+  }, []);
+
+  const handleLogout = () => {
+    // Implement logout functionality here
+    // For example, clearing user data from local storage and redirecting to login page
+    // localStorage.removeItem("loggedInUser");
+    // history.push("/SignIn");
+    window.location.href = "/SignIn"; // Redirect to login page
+  };
+
+  console.log("logediuser",loggedInUser)
   return (
+
     <>
       <>
         <div className="site-mobile-menu site-navbar-target">
@@ -11,7 +30,7 @@ const Header = () => {
             </div>
           </div>
           <div className="site-mobile-menu-body" >
-            <h2>Hello</h2>
+            {loggedInUser ? <h2>Hello, {loggedInUser.email}</h2> : null}
           </div>
         </div>
         <nav className="site-nav">
@@ -117,8 +136,21 @@ const Header = () => {
                   </ul>
                 </li>
                 <li>
-                  <a href="/SignIn">Login</a>
+                  <div className="dropdown text-white">
+                  {loggedInUser ? (
+                    <li>
+                      {/* Show user name if logged in */}
+                      <span >{loggedInUser.email.split('@')[0]}</span>
+                    </li>
+                  ) : (
+                    <li>
+                      {/* Show login button if not logged in */}
+                      <a href="/SignIn">Login</a>
+                    </li>
+                  )}
+                  </div>
                 </li>
+                
               </ul>
               <a
                 href="#"

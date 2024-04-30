@@ -5,6 +5,7 @@ import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, si
 import "./signin.css";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import {storeUserToLocalStorage} from "../../storage/loggedInUserLocalSt"
 
 const SignIn = () => {
   const auth = getAuth(app);
@@ -33,25 +34,27 @@ const SignIn = () => {
   const handleSignIn = async (e) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password); // Updated function call
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      storeUserToLocalStorage(user); // Assuming your storeUserToLocalStorage function expects user data
       navigate("/");
-      toast.success("LogedIn Successfully ");
+      toast.success("Logged In Successfully");
     } catch (error) {
       console.error(error.message);
       toast.error("Invalid Login, Please try Again");
-      // Handle sign-in errors (e.g., display error message)
     }
   };
 
   const handleSignUp = async (e) => {
     e.preventDefault();
     try {
-      await createUserWithEmailAndPassword(auth, email, password); // Updated function call
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      storeUserToLocalStorage(user); // Assuming your storeUserToLocalStorage function expects user data
       navigate("/");
       toast.success("Signup Successfully ");
     } catch (error) {
       console.error(error.message);
-      // Handle sign-up errors (e.g., display error message)
     }
   };
 
@@ -59,6 +62,8 @@ const SignIn = () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      storeUserToLocalStorage(user); // Assuming your storeUserToLocalStorage function expects user data
       navigate("/");
       toast.success("Logged In with Google Successfully");
     } catch (error) {
@@ -71,6 +76,8 @@ const SignIn = () => {
     const provider = new FacebookAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      storeUserToLocalStorage(user); // Assuming your storeUserToLocalStorage function expects user data
       navigate("/");
       toast.success("Logged In with Facebook Successfully");
     } catch (error) {
@@ -83,6 +90,8 @@ const SignIn = () => {
     const provider = new TwitterAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      storeUserToLocalStorage(user); // Assuming your storeUserToLocalStorage function expects user data
       navigate("/");
       toast.success("Logged In with Twitter Successfully");
     } catch (error) {
@@ -90,7 +99,6 @@ const SignIn = () => {
       toast.error("Failed to Sign In with Twitter");
     }
   };
-
   return (
     <>
       <div className="auth-container">
