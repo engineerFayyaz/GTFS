@@ -19,7 +19,7 @@ const T8Governance = () => {
                 subtitle2="insights into public transport"
                 // subtitle3=""
                 btnlink="#"
-                btntext="request demo"
+                btntext="Request a demo"
                 imgsrc="/images/images-entour/T8.png"
             />
             <TransitInformation

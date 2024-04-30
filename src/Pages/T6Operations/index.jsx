@@ -21,7 +21,7 @@ const T6Operations = () => {
                 subtitle2="optimize your operations in"
                 subtitle3="real-time"
                 btnlink="#"
-                btntext="request demo"
+                btntext="Request a demo"
                 imgsrc="/images/images-entour/For+operators.png"
             />
 
@@ -107,7 +107,7 @@ const T6Operations = () => {
                         fleet successfully.
                     </p>
                     <a href="demo.html">
-                        <button>Requset a demo</button>
+                        <button >Requset a demo</button>
                     </a>
                 </div>
             </div>

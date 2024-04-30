@@ -144,7 +144,7 @@ const SignIn = () => {
                 <i className="fab fa-facebook-f" />
               </button>
               <button onClick={handleTwitterSignIn} className="social-icon">
-                <i className="fab fa-twitter" />
+              <i class="fa-brands fa-x-twitter"></i>
               </button>
               {/* Add LinkedIn button and handler similarly */}
             </div>
@@ -197,7 +197,7 @@ const SignIn = () => {
                 <i className="fab fa-facebook-f" />
               </button>
               <button onClick={handleTwitterSignIn} className="social-icon">
-                <i className="fab fa-twitter" />
+              <i class="fa-brands fa-x-twitter"></i>
               </button>
               {/* Add LinkedIn button and handler similarly */}
             </div>
@@ -209,8 +209,7 @@ const SignIn = () => {
             <div className="content">
               <h3>New here ?</h3>
               <p>
-                Lorem ipsum, dolor sit amet consectetur adipisicing elit.
-                Debitis, ex ratione. Aliquid!
+              Sign in to Busmate for streamlined GTFS-powered navigation and live updates.
               </p>
               <button className="transparent" id="sign-up-btn">
                 Sign up
@@ -222,8 +221,7 @@ const SignIn = () => {
             <div className="content">
               <h3>One of us ?</h3>
               <p>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum
-                laboriosam ad deleniti.
+              Sign up with Busmate to access GTFS-powered navigation and personalized route alerts.
               </p>
               <button className="transparent" id="sign-in-btn">
                 Sign in

@@ -20,7 +20,7 @@ const T7Insights = () => {
                 subtitle2="performance to enhance"
                 subtitle3="operational efficiency"
                 btnlink="#"
-                btntext="request demo"
+                btntext="Request a demo"
                 imgsrc="/images/images-entour/insights.png"
             />
             {/* information section */}

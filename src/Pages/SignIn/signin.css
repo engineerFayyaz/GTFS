@@ -133,8 +133,9 @@ input {
 }
 
 .auth-container .social-icon:hover {
-  color: #4481eb;
-  border-color: #4481eb;
+  color: white;
+  border-color: black;
+  background: #f65b31;
 }
 
 .auth-container .btn {

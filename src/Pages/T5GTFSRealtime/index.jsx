@@ -21,7 +21,7 @@ const T5GTFSRealtime = () => {
                 subtitle2="Realtime data to improve"
                 subtitle3="urban mobility"
                 btnlink="#"
-                btntext="request demo"
+                btntext="Request a demo"
                 imgsrc="/images/images-entour/For+operators.png"
             />
             {/* information section */}
