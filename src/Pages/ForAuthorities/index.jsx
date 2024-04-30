@@ -16,7 +16,7 @@ const ForAuthorities = () => {
         subtitle="Improve accessibility and"
         subtitle2="passenger convenience"
         subtitle3="with GTFS data"
-        btntext="request demo"
+        btntext="Request a demo"
         imgsrc="/images/images-entour/mobiletransit.png"
       />
 

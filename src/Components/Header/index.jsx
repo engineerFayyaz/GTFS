@@ -1,26 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { getUserFromLocalStorage } from "../../storage/loggedInUserLocalSt"
+// import firebase from "firebase/app";
+import {getAuth} from "firebase/auth"
+import "firebase/auth";
 const Header = () => {
-  const [loggedInUser, setLoggedInUser] = useState(null);
-
+  const [user, setUser] = useState("");
+  const auth = getAuth();
   useEffect(() => {
-    let u = getUserFromLocalStorage();
-
-    setLoggedInUser(u)
-
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+    });
+    return () => unsubscribe();
   }, []);
 
-  const handleLogout = () => {
-    // Implement logout functionality here
-    // For example, clearing user data from local storage and redirecting to login page
-    // localStorage.removeItem("loggedInUser");
-    // history.push("/SignIn");
-    window.location.href = "/SignIn"; // Redirect to login page
+  const handleSignOut = () => {
+    auth.signOut();
   };
-
-  console.log("logediuser",loggedInUser)
   return (
-
     <>
       <>
         <div className="site-mobile-menu site-navbar-target">
@@ -29,8 +24,8 @@ const Header = () => {
               <span className="icofont-close js-menu-toggle" />
             </div>
           </div>
-          <div className="site-mobile-menu-body" >
-            {loggedInUser ? <h2>Hello, {loggedInUser.email}</h2> : null}
+          <div className="site-mobile-menu-body">
+            <h2>Hello</h2>
           </div>
         </div>
         <nav className="site-nav">
@@ -47,7 +42,7 @@ const Header = () => {
                 <li>
                   <a href="/Resources">Resources</a>
                 </li>
-               
+
                 <li>
                   <a href="/Pricing">Pricing</a>
                 </li>
@@ -66,7 +61,7 @@ const Header = () => {
                   <ul className="dropdown-menu">
                     {/* Dropdown menu items */}
                     <li>
-                      <a href="/T1Enroute">  Enroute </a>
+                      <a href="/T1Enroute"> Enroute </a>
                     </li>
                     <li>
                       <a href="/T2Performance"> Performance </a>
@@ -139,21 +134,32 @@ const Header = () => {
                     </li>
                   </ul>
                 </li>
-                <li>
-                  <div className="dropdown text-white">
-                  {loggedInUser ? (
+                {user ? (
+                  <li className="dropdown dropstart">
+                    <a
+                      href="#"
+                      className="dropdown-toggle"
+                      data-toggle="dropdown"
+                      role="button"
+                      aria-haspopup="true"
+                      aria-expanded="false"
+                    >
+                      {user.email.split('@')[0]} <span className="caret" />
+                    </a>
+                    <ul className="dropdown-menu " style={{ minWidth: "8rem" }}>
+                      {/* Dropdown menu items */}
+                      <li>
+                        <a href={''} onClick={handleSignOut}  >Logout</a>
+                      </li>
+                    </ul>
+                  </li>
+                ) : (
+                  <>
                     <li>
-                      {/* Show user name if logged in */}
-                      <span >{loggedInUser.email.split('@')[0]}</span>
+                      <a href="/signin"> Login </a>
                     </li>
-                  ) : (
-                    <li>
-                      {/* Show login button if not logged in */}
-                      <a href="/SignIn">Login</a>
-                    </li>
-                  )}
-                  </div>
-                </li>  
+                  </>
+                )}
               </ul>
               <a
                 href="#"

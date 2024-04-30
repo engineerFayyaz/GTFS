@@ -20,7 +20,7 @@ const T1Enroute = () => {
         subtitle2="and connect vehicles"
         subtitle3="to collect data"
         btnlink="#"
-        btntext="request demo"
+        btntext="Request a demo"
         imgsrc="/images/images-entour/lots-of-blue-buses.png"
         />
         {/* information section */}

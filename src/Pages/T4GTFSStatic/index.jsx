@@ -20,7 +20,7 @@ const T4GTFSStatic = () => {
         subtitle2="and adjust frequency needs"
         subtitle3="to collect data"
         btnlink="#"
-        btntext="request demo"
+        btntext="Request a demo"
         imgsrc="/images/images-entour/Frequency+and+vehicles+1.0.png"
       />
       {/* information section */}

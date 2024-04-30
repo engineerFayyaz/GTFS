@@ -6,7 +6,21 @@
     background-color: #EBEAEB;
     padding: 28px;
    }
-
+.transit-services a>button{
+    background: transparent;
+    color: black;
+    border: 2px solid black;
+    padding: 10px 20px;
+    border-radius: 10px;
+    transition: all .3s ease;
+    font-weight: 600;
+    font-size: 17px;
+}
+.transit-services a>button:hover{
+    background: #05325B;
+    border-color: #33D98A;
+    color: white;
+}
    /* .imagetext */
 
    .side-image-one img{
