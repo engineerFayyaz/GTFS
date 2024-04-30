@@ -1,5 +1,4 @@
 export  function storeUserToLocalStorage(user) {
-    debugger
     try {
         localStorage.setItem('login-user', JSON.stringify(user));
     } catch (error) {
