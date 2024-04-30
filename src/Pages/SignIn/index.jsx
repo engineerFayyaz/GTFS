@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { app } from "../../FirebaseConfig"
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, TwitterAuthProvider, signInWithRedirect } from "firebase/auth";
 import "./signin.css";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {storeUserToLocalStorage} from "../../storage/loggedInUserLocalSt"
+import Loader from "../../Components/Loader";
 
 const SignIn = () => {
   const auth = getAuth(app);
@@ -16,6 +17,8 @@ const SignIn = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [country, setCountry] = useState("");
+  const [loading,setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
     const sign_in_btn = document.querySelector("#sign-in-btn");
@@ -48,11 +51,13 @@ const SignIn = () => {
   const handleSignUp = async (e) => {
     e.preventDefault();
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      storeUserToLocalStorage(user); // Assuming your storeUserToLocalStorage function expects user data
+      await createUserWithEmailAndPassword(auth, email, password); // Updated function call
       navigate("/");
       toast.success("Signup Successfully ");
+      setLoading(false);
+      setTimeout(() => {
+        navigate("/");
+      },1000)
     } catch (error) {
       console.error(error.message);
     }
@@ -61,6 +66,7 @@ const SignIn = () => {
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
+      setGoogleLoading(true);
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       storeUserToLocalStorage(user); // Assuming your storeUserToLocalStorage function expects user data
@@ -101,6 +107,8 @@ const SignIn = () => {
   };
   return (
     <>
+
+    <ToastContainer />
       <div className="auth-container">
         <div className="forms-container">
           <div className="signin-signup">

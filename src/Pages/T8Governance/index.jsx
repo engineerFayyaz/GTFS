@@ -7,6 +7,7 @@ import T1Banner from "../../Components/T1banner";
 import TransitInformation from "../../Components/TransitInformation";
 import TransitCards from "../../Components/TransitCards";
 import FollowUs from "../../Components/FollowUs";
+import TransitTwoImages from "../../Components/TransitTwoImages";
 
 const T8Governance = () => {
     return (
@@ -19,7 +20,7 @@ const T8Governance = () => {
                 // subtitle3=""
                 btnlink="#"
                 btntext="request demo"
-                imgsrc="/images/images-entour/T8+Governance+Transit+service-+Enrouteq.png"
+                imgsrc="/images/images-entour/T8.png"
             />
             <TransitInformation
                 title="T8 Governance transit service"
@@ -115,28 +116,15 @@ const T8Governance = () => {
                 </div>
             
 
-          
+            <TransitTwoImages 
+             subtitle1="More riders. More revenue."
+             title1="T5 GTFS Realtime"
+             btn1link="/t5gtfsrealtime"
+             subtitle2="Make transit data available"
+             title2="For Authorities"
+             btn2link="/forauthorities"
+            />
                 {/* two images */}
-                <div className="two-images-section overflow-hidden">
-                    <div className="row p-5 g-3">
-                        <div className="col-lg-6 t3-schedule text-light d-flex justify-content-center align-items-center flex-column">
-                            <h4>More riders. More revenue.</h4>
-                            <h1>T5 GTFS Realtime</h1>
-                            <a href="t5.html">
-                                <button className="btn-two-images-section">Learn more</button>
-                            </a>
-                            {/* <img src="images/images-entour/performance.png" alt=""> */}
-                        </div>
-                        <div className="col-lg-6 text-light t4-gtfs-static d-flex justify-content-center align-items-center flex-column">
-                            <h4>Make transit data available</h4>
-                            <h1>For authorities</h1>
-                            <a href="for-authorities.html">
-                                <button className="btn-two-images-section">Learn more</button>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            
            
                 {/* social media icons */}
               <FollowUs />

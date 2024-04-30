@@ -5,6 +5,7 @@ import Footer from "../../Components/Footer";
 import T1Banner from "../../Components/T1banner";
 import TransitInformation from "../../Components/TransitInformation";
 import FollowUs from "../../Components/FollowUs";
+import TransitTwoImages from "../../Components/TransitTwoImages";
 
 
 
@@ -110,26 +111,15 @@ const T6Operations = () => {
                     </a>
                 </div>
             </div>
-            <div className="two-images-section overflow-hidden">
-                <div className="row p-5 g-3">
-                    <div className="col-lg-6 t3-schedule text-light d-flex justify-content-center align-items-center flex-column">
-                        <h4>Learn more about GTFS data</h4>
-                        <h1>T6 GTFS Static</h1>
-                        <a href="t4.html">
-                            <button className="btn-two-images-section">Learn more</button>
-                        </a>
-                        {/* <img src="images/images-entour/performance.png" alt=""> */}
-                    </div>
-                    <div className="col-lg-6 text-light t4-gtfs-static d-flex justify-content-center align-items-center flex-column">
-                        <h4>More riders. More revenue.</h4>
-                        <h1>T7 GTFS Realtime</h1>
-                        <a href="t5.html">
-                            <button className="btn-two-images-section">Learn more</button>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
+            <TransitTwoImages
+              subtitle1="Cost control and efficiency"
+              title1="T7 Insights"
+              btn1link="/t7insights"
+              subtitle2="Optimize operations"
+              title2="For Operators"
+              btn2link="/foroperators"
+            />
+      
             {/* social media icons */}
            <FollowUs />
 

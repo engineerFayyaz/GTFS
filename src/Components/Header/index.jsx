@@ -47,6 +47,7 @@ const Header = () => {
                 <li>
                   <a href="/Resources">Resources</a>
                 </li>
+               
                 <li>
                   <a href="/Pricing">Pricing</a>
                 </li>
@@ -65,30 +66,33 @@ const Header = () => {
                   <ul className="dropdown-menu">
                     {/* Dropdown menu items */}
                     <li>
-                      <a href="/T1Enroute"> T1 Enroute </a>
+                      <a href="/T1Enroute">  Enroute </a>
                     </li>
                     <li>
-                      <a href="/T2Performance">T2 Performance </a>
+                      <a href="/T2Performance"> Performance </a>
                     </li>
                     <li>
-                      <a href="/T3Schedules">T3 Schedules </a>
+                      <a href="/T3Schedules"> Schedules </a>
                     </li>
                     <li>
-                      <a href="/T4GTFSStatic">T4 GTFS Static </a>
+                      <a href="/T4GTFSStatic"> GTFS Static </a>
                     </li>
                     <li>
-                      <a href="/T5GTFSRealtime">T5 GTFS Realtime </a>
+                      <a href="/T5GTFSRealtime"> GTFS Realtime </a>
                     </li>
                     <li>
-                      <a href="/T6Operations">T6 Operations </a>
+                      <a href="/T6Operations"> Operations </a>
                     </li>
                     <li>
-                      <a href="/T7Insights">T7 Insights </a>
+                      <a href="/T7Insights"> Insights </a>
                     </li>
                     <li>
-                      <a href="/T8Governance">T8 Governance </a>
+                      <a href="/T8Governance"> Governance </a>
                     </li>
                   </ul>
+                </li>
+                <li>
+                  <a href="/Partner">Partner</a>
                 </li>
                 <li className="dropdown">
                   <a

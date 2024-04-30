@@ -6,6 +6,7 @@ import Accordion from "../../Components/Accordion";
 import T1Banner from "../../Components/T1banner";
 import TransitInformation from "../../Components/TransitInformation";
 import FollowUs from "../../Components/FollowUs";
+import TransitTwoImages from "../../Components/TransitTwoImages";
 
 
 const T2Performance = () => {
@@ -156,25 +157,14 @@ const T2Performance = () => {
                 </div>
 
                 {/* two images */}
-                <div className="two-images-section overflow-hidden">
-                    <div className="row p-5 g-3">
-                        <div className="col-lg-6 t3-schedule text-light d-flex justify-content-center align-items-center flex-column">
-                            <h4>Create GTFS schedules</h4>
-                            <h1>T3 Schedules</h1>
-                            <a href="t3.html">
-                                <button className="btn-two-images-section">Learn more</button>
-                            </a>
-                            {/* <img src="images/images-entour/performance.png" alt=""> */}
-                        </div>
-                        <div className="col-lg-6 text-light t4-gtfs-static d-flex justify-content-center align-items-center flex-column">
-                            <h4>Learn more about GTFS data</h4>
-                            <h1>T4 GTFS Static</h1>
-                            <a href="t4.html">
-                                <button className="btn-two-images-section">Learn more</button>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                <TransitTwoImages
+                subtitle1="Create GTFS schedules"
+                title1="T3 Schedules"
+                btn1link="/t3schedules"
+                subtitle2="Learn more about GTFS data"
+                title2="T4 GTFS Static"
+                btn2link="/t4gtfsstatic"
+                />
                 {/* social media icons */}
                 <FollowUs />
             </main>

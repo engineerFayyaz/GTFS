@@ -104,7 +104,7 @@ const RouteMap = () => {
         </div>
       </div>
       <div className="row flex-wrap d-flex justify-content-around align-items-center ">
-        <div className="col-md-6 my-4">
+        <div className="col-md-6 my-4 text-center">
           <h3>View Options:</h3>
           <button onClick={() => changeViewOption("Map")} className="btn btn-outline-dark">Map</button>
           <button onClick={() => changeViewOption("Hybrid")} className="btn btn-outline-info">Hybrid</button>
