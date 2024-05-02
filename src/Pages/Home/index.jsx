@@ -20,7 +20,7 @@ const Home = () => {
   return (
     <>
       {/* <Header /> */}
-      <UserHeader />
+      <Header />
       <HomeSlider  />
       <Services />
       <RouteMap />

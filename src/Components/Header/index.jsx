@@ -29,7 +29,7 @@ const Header = () => {
           </div>
         </div>
         <nav className="site-nav">
-          <div className="container">
+          <div className="container-fluid px-2 px-md-4">
             <div className="site-navigation">
               <a href="/" className="logo m-0">
                 <img src="/images/logo white.png" width={200} alt="" />
@@ -146,7 +146,7 @@ const Header = () => {
                     >
                       {user.email.split('@')[0]} <span className="caret" />
                     </a>
-                    <ul className="dropdown-menu " style={{ minWidth: "8rem" }}>
+                    <ul className="dropdown-menu " style={{ minWidth: "7rem" }}>
                       {/* Dropdown menu items */}
                       <li>
                         <a href={''} onClick={handleSignOut}  >Logout</a>
