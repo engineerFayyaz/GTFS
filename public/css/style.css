@@ -19,6 +19,9 @@ body {
   overflow-x: hidden;
   font-size: 14px;
 }
+.carousel-item {
+  transition: all .6s ease-in-out !important;
+}
 body:before {
   content: "";
   position: fixed;
