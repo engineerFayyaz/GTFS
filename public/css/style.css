@@ -295,9 +295,7 @@ h4,
   font-weight: bold;
   
 } */
-.dropdown:hover a {
-  /* background: #000; */
-}
+
 nav .dropdown:hover .dropdown-menu {
   display: block;
 }
