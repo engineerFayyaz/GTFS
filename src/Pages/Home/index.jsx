@@ -9,19 +9,19 @@ import Testimonials from "../../Components/Testimonials";
 import ServiceVideo from "../../Components/ServiceVideo";
 import Subscribe from "../../Components/Subscribe";
 import Footer from "../../Components/Footer";
-import AOS from 'aos';
-import 'aos/dist/aos.css';
+import AOS from "aos";
+import "aos/dist/aos.css";
 import UserHeader from "../../Components/UserHeader";
 
 const Home = () => {
   useEffect(() => {
     AOS.init();
-  }, [])
+  }, []);
   return (
     <>
       {/* <Header /> */}
       <Header />
-      <HomeSlider  />
+      <HomeSlider />
       <Services />
       <RouteMap />
       <Tools />
@@ -88,6 +88,12 @@ const Home = () => {
                 <p>Problems Solved</p>
               </div>
             </div>
+          </div>
+        </div>
+        <div className="row text-center justify-content-center mb-3 mt-0 mt-md-5">
+          <div className="col-lg-7 mt-0 md-mt-5" data-aos="fade-up">
+            <p className="mb-0">Affordable Tools &amp; Calculators</p>
+            <h2 className="section-title text-center">Our Pricing Plans</h2>
           </div>
         </div>
         <PricingPlan />

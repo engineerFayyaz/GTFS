@@ -98,6 +98,7 @@ h4,
   padding-right: 30px;
   border-radius: 30px;
   font-size: 14px;
+  transition: all .3s ease-in-out;
 }
 .btn:active,
 .btn:focus {
@@ -2097,10 +2098,12 @@ a {
   padding: 0px 5px;
 
 }
-
+.pricingTable .pricing-content .btn{
+  transition: all .3s ease-in;
+}
 .pricingTable .pricingTable-signup {
   display: inline-block;
-  padding: 10px 30px;
+  padding: 10px 0px;
   background: #1daa72;
   font-size: 18px;
   font-weight: 600;
@@ -2111,67 +2114,11 @@ a {
   width: 85%;
   border-radius: 10px;
 }
-.pricingTable .pricingTable-signup:last-child{
-  background: transparent !important;
-  margin-top: 10px;
-  border: 2px solid rgb(41, 32, 32);
-  color: rgb(41, 32, 32);
-}
 
-.pricingTable .pricingTable-signup:before {
-  content: "";
-  display: inline-block;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 1) 50%, rgba(255, 255, 255, 0) 100%);
-  position: absolute;
-  top: 0;
-  left: 0;
-  opacity: 0;
-  transform: translate(0, 100%);
-  transition: all .6s ease-in-out 0s
-}
 
-.pricingTable .pricingTable-signup:hover:before {
-  opacity: 1;
-  transform: translate(0, -100%)
-}
 
-.pricingTable.blue .pricingTable-signup,
-.pricingTable.blue .title,
-.pricingTable.blue:after {
-  background: var(--bg-grey)
-}
-.pricingTable.platinium .pricingTable-signup,
-.pricingTable.platinium .title,
-.pricingTable.platinium:after{
-  background: rgb(40, 36, 36);
-}
-.pricingTable.blue .title:after,
-.pricingTable.blue .title:before {
-  border-top: 15px solid #407a88
-}
 
-.pricingTable.blue .price-value {
-  color: var(--bg-grey)
-}
-.pricingTable.platinium .price-value {
-  color: rgb(40, 36, 36);
-}
-.pricingTable.pink .pricingTable-signup,
-.pricingTable.pink .title,
-.pricingTable.pink:after {
-  background: var(--bg-blue)
-}
 
-.pricingTable.pink .price-value {
-  color: var(--text-color-blue)
-}
-
-.pricingTable.pink .title:after,
-.pricingTable.pink .title:before {
-  border-top: 15px solid #773667
-}
 
 @media only screen and (max-width:990px) {
   .pricingTable {

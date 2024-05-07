@@ -1,139 +1,105 @@
-import React from "react";
+import React, {useState} from "react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Button, Modal } from "bootstrap";
 
 const PricingPlan = () => {
+  const [selectedPlan, setSelectedPlan] = useState("");
+  const [selectedAmount, setSelectedAmount] = useState(0);
+
+  const handleSelectPlan = (plan) => {
+    setSelectedPlan(plan);
+    setSelectedAmount(plans[plan].amount);
+    openStripePaymentWindow(plan);
+  };
+
+  const openStripePaymentWindow = (plan) => {
+    const stripePaymentURL = getStripePaymentURL(plan);
+    const stripePaymentWindow = window.open(stripePaymentURL, "_blank");
+    if (stripePaymentWindow) {
+      stripePaymentWindow.focus();
+    } else {
+      toast.error("Popup blocked by the browser");
+    }
+  };
+
+  const getStripePaymentURL = (plan) => {
+    return `https://buy.stripe.com/${plan}?amount=${plans[plan].amount}`; // Replace with actual URL
+  };
+
+  // Define the plans object
+  const plans = {
+    bronze: {
+      amount: 20.0,
+      agencies: 1,
+      stops: "Unlimited",
+      routes: 2,
+      import: "unlimited",
+    },
+    silver: {
+      amount: 45.0,
+      agencies: 1,
+      stops: "Unlimited",
+      routes: 5,
+      import: "unlimited",
+    },
+    gold: {
+      amount: 150.0,
+      agencies: 2,
+      stops: "Unlimited",
+      routes: 20,
+      import: "unlimited",
+    },
+    platinum: {
+      amount: 300.0,
+      agencies: 4,
+      stops: "Unlimited",
+      routes: 50,
+      import: "unlimited",
+    },
+  };
+
   return (
     <>
       <>
-        <div className="untree_co-section pb-0 mb-0">
-          <div className="row text-center justify-content-center mb-5">
-            <div className="col-lg-7" data-aos="fade-up">
-              <p className="mb-0">Affordable Tools &amp; Calculators</p>
-              <h2 className="section-title text-center">Our Pricing Plans</h2>
-            </div>
-          </div>
+        <div className="untree_co-section pb-0 mb-0 p-0">
           <div className="demo">
-            <div className="container">
+          <div className="container">
               <div className="row">
-                <div className="col-md-3 col-sm-6" >
-                  <div className="pricingTable" data-aos="fade-left">
-                    <h3 className="title">Bronze</h3>
-                    <div className="price-value">
-                      <span className="currency">$</span>
-                      <span className="amount">20.00</span>
-                      <span className="month">/month per user</span>
+                {Object.keys(plans).map((planKey) => (
+                  <div key={planKey} className="col-md-3 col-sm-6">
+                    <div className="pricingTable">
+                      <h3 className="title">
+                        {planKey.charAt(0).toUpperCase() + planKey.slice(1)}
+                      </h3>
+                      <div className="price-value">
+                        <span className="currency">$</span>
+                        <span className="amount">{plans[planKey].amount}</span>
+                        <span className="month">/month per user</span>
+                      </div>
+                      <ul className="pricing-content">
+                        <li>
+                          <b>Agencies:</b> {plans[planKey].agencies}
+                        </li>
+                        <li>
+                          <b>Stops:</b> {plans[planKey].stops}
+                        </li>
+                        <li>
+                          <b>Routes:</b> {plans[planKey].routes}
+                        </li>
+                        <li>
+                          <b>Import/export:</b> {plans[planKey].import}
+                        </li>
+                      </ul>
+                      <button
+                        className="btn btn-success"
+                        onClick={() => handleSelectPlan(planKey)}
+                      >
+                        Pay with Stripe
+                      </button>
                     </div>
-                    <ul className="pricing-content">
-                      <li>
-                        <b>Agencies:</b> 1
-                      </li>
-                      <li>
-                        <b>Stops:</b> Unlimited
-                      </li>
-                      <li>
-                        <b>Routes</b> 2
-                      </li>
-                      <li>
-                        <b>Import/export</b> Unlimited
-                      </li>
-                    </ul>
-                    <a href="#" className="pricingTable-signup">
-                      Buy Now
-                    </a>
-                    <a href="#" className="pricingTable-signup">
-                      Try For Free
-                    </a>
                   </div>
-                </div>
-                <div className="col-md-3 col-sm-6" >
-                  <div className="pricingTable pink" data-aos="zoom-in">
-                    <h3 className="title">Silver</h3>
-                    <div className="price-value">
-                      <span className="currency">$</span>
-                      <span className="amount">45.00</span>
-                      <span className="month">/month per user</span>
-                    </div>
-                    <ul className="pricing-content">
-                      <li>
-                        <b>Agencies:</b> 1
-                      </li>
-                      <li>
-                        <b>Stops:</b> Unlimited
-                      </li>
-                      <li>
-                        <b>Routes</b> 5
-                      </li>
-                      <li>
-                        <b>Import/export</b> Unlimited
-                      </li>
-                    </ul>
-                    <a href="#" className="pricingTable-signup">
-                      Buy Now
-                    </a>
-                    <a href="#" className="pricingTable-signup">
-                      Try For Free
-                    </a>
-                  </div>
-                </div>
-                <div className="col-md-3 col-sm-6" >
-                  <div className="pricingTable blue" data-aos="zoom-in">
-                    <h3 className="title">Gold</h3>
-                    <div className="price-value">
-                      <span className="currency">$</span>
-                      <span className="amount">150.00</span>
-                      <span className="month">/month per user</span>
-                    </div>
-                    <ul className="pricing-content">
-                      <li>
-                        <b>Agencies:</b> 2
-                      </li>
-                      <li>
-                        <b>Stops:</b> Unlimited
-                      </li>
-                      <li>
-                        <b>Routes</b> 20 combined
-                      </li>
-                      <li>
-                        <b>Import/export</b> Unlimited
-                      </li>
-                    </ul>
-                    <a href="#" className="pricingTable-signup">
-                      Buy Now
-                    </a>
-                    <a href="#" className="pricingTable-signup">
-                      Try For Free
-                    </a>
-                  </div>
-                </div>
-                <div className="col-md-3 col-sm-6" >
-                  <div className="pricingTable platinium" data-aos="fade-right">
-                    <h3 className="title">Platinum</h3>
-                    <div className="price-value">
-                      <span className="currency">$</span>
-                      <span className="amount">300.0</span>
-                      <span className="month">/month per user</span>
-                    </div>
-                    <ul className="pricing-content">
-                      <li>
-                        <b>Agencies:</b> 4
-                      </li>
-                      <li>
-                        <b>Stops:</b> Unlimited
-                      </li>
-                      <li>
-                        <b>Routes</b> 50 combined
-                      </li>
-                      <li>
-                        <b>Import/export</b> Unlimited
-                      </li>
-                    </ul>
-                    <a href="#" className="pricingTable-signup">
-                      Buy Now
-                    </a>
-                    <a href="#" className="pricingTable-signup">
-                      Try For Free
-                    </a>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
