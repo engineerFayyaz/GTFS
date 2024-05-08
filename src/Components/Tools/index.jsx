@@ -175,7 +175,7 @@ const Tools = () => {
                   alt=""
                   className="mb-3"
                 />
-                <a href="">
+                <a href="/map">
                   <h3>Route Map</h3>
                 </a>
                 <p>

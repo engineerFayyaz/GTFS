@@ -7,7 +7,7 @@ const AOSInitializer = ({ children }) => {
   useEffect(() => {
     AOS.init({
       // Global settings
-      duration: 1200, // Animation duration in milliseconds
+      duration: 500, // Animation duration in milliseconds
       once: false, // Whether to only animate elements once
       easing: 'ease-in-out', // Easing function
       // Add more global settings as needed

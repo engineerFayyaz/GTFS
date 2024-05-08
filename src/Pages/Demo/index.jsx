@@ -3,6 +3,7 @@ import Header from "../../Components/Header";
 import FaqBannner from "../../Components/FaqBanner";
 import Footer from "../../Components/Footer";
 import FollowUs from "../../Components/FollowUs";
+import { PartnerRegister } from "../../Components/ParnterRegisteration";
 
 
 const Demo = () => {
@@ -26,6 +27,7 @@ const Demo = () => {
         </div>
       </div>
       <hr />
+      <PartnerRegister/>
         <FollowUs />
       <Footer />
     </>

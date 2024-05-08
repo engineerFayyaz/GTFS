@@ -4,6 +4,7 @@ import Subscribe from "../../Components/Subscribe"
 import Footer from "../../Components/Footer"
 import Services from "../../Components/Services";
 import Tools from "../../Components/Tools";
+import { VideoTutorial } from "../../Components/VideoTutorial";
 
 const Resources = () => {
 
@@ -16,7 +17,7 @@ const Resources = () => {
                         <div className="row align-items-center">
                             <div className="col-lg-6 mx-auto text-center">
                                 <div className="intro-wrap">
-                                    <h1 className="mb-0">Our Services</h1>
+                                    <h1 className="mb-0">Our Resources</h1>
                                     <p className="text-white">
                                         Far far away, behind the word mountains, far from the countries
                                         Vokalia and Consonantia, there live the blind texts.{" "}
@@ -28,6 +29,7 @@ const Resources = () => {
                 </div>
             </>
         <Services />
+        <VideoTutorial />
         <Tools />
             <Subscribe />
             <Footer />

@@ -1449,7 +1449,17 @@ nav .dropdown li:hover a{
   font-weight: 700;
 }
 .service p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; 
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
   font-size: 17px;
+}
+.service p:focus, .service p::selection{
+  -webkit-line-clamp: 4; 
+  line-clamp: 4;
 }
 
 .feature-img-bg {

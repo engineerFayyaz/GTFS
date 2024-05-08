@@ -23,6 +23,7 @@ import Demo from "./Pages/Demo"
 import ForAuthorities from "./Pages/ForAuthorities";
 import ForOperators from "./Pages/ForOperators";
 import Partner from "./Pages/Partner";
+import { Map } from "./Pages/Map";
 // import Home from "./Pages/Home";
 
 const ProjectRoutes = () => {
@@ -54,6 +55,7 @@ const ProjectRoutes = () => {
             <Route path="/ForAuthorities" element={<ForAuthorities />} />
             <Route path="/ForOperators" element={<ForOperators />} />
             <Route path="/Partner" element={<Partner />} />
+            <Route path="/Map" element={<Map />} />
           </Routes>
         </Router>
       </React.Suspense>

@@ -48,7 +48,7 @@ const ForOperators = () => {
                   Digitalize the transit network and connect vehicles to collect
                   performance data along routes.
                 </p>
-                <a href="t1-enroute.html">Learn more &gt; </a>
+                <a href="/t1enroute">Learn more &gt; </a>
                 <img
                   className="card-img-top object-fit-cover"
                   src="/images/images-entour/ak.png"
@@ -65,7 +65,7 @@ const ForOperators = () => {
                   Visualize and analyze collected transit data from vehicle
                   performances on operating routes.
                 </p>
-                <a href="t2.html">Learn more &gt; </a>
+                <a href="/t2performance">Learn more &gt; </a>
                 <img
                   className="card-img-top object-fit-cover"
                   src="/images/images-entour/Frequency+and+vehicles+1.0.png"
@@ -82,7 +82,7 @@ const ForOperators = () => {
                   Create Dynamic GTFS Schedules and adjust frequency needs based
                   on the number of vehicles.
                 </p>
-                <a href="t1-enroute.html">Learn more &gt; </a>
+                <a href="/t3schedule">Learn more &gt; </a>
                 <img
                   className="card-img-top object-fit-cover"
                   src="/images/images-entour/Frequency+and+vehicles+2.0.png"
@@ -99,7 +99,7 @@ const ForOperators = () => {
                   Optimize assignments and dispatch, as well as make necessary
                   changes in real-time. Optimize schedule.
                 </p>
-                <a href="t1-enroute.html">Learn more &gt; </a>
+                <a href="/t6operations">Learn more &gt; </a>
                 <img
                   className="card-img-top object-fit-cover"
                   src="/images/images-entour/parked.png"
@@ -116,7 +116,7 @@ const ForOperators = () => {
                   Understand your fleet performance and effectively visualize
                   and analyze historical data. Insight services.
                 </p>
-                <a href="t1-enroute.html">Learn more &gt; </a>
+                <a href="/t7insights">Learn more &gt; </a>
                 <img
                   className="card-img-top object-fit-cover"
                   src="/images/images-entour/insights.png"
