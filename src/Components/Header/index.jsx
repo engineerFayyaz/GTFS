@@ -1,20 +1,60 @@
 import React, { useState, useEffect } from "react";
 // import firebase from "firebase/app";
-import {getAuth} from "firebase/auth"
+import { getAuth, signOut } from "firebase/auth"
+import { getFirestore, collection, onSnapshot, deleteDoc, doc } from "firebase/firestore";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import "firebase/auth";
 const Header = () => {
   const [user, setUser] = useState("");
+  const [notifications, setNotifications] = useState([]);
   const auth = getAuth();
+  const db = getFirestore();
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
     });
-    return () => unsubscribe();
-  }, []);
+
+    const unsubscribeNotifications = onSnapshot(collection(db, "notifications"), (snapshot) => {
+      const notificationData = snapshot.docs.map((doc) => doc.data());
+      setNotifications(notificationData);
+    });
+
+    return () => {
+      unsubscribe();
+      unsubscribeNotifications();
+    };
+  }, [auth, db]);
+
 
   const handleSignOut = () => {
     auth.signOut();
   };
+
+  const handleClearAll = async () => {
+    try {
+      await Promise.all(
+        notifications.map(async (notification) => {
+          if (notification.id) { // Check if id exists
+            const notificationRef = doc(db, "notifications", notification.id);
+            await deleteDoc(notificationRef);
+            toast.success("Notification deleted:");
+          } else {
+            // toast.warn("Notification ID is missing:");
+          }
+        })
+      );
+      toast.success("All notifications cleared successfully.");
+      setNotifications([]); // Clear notifications from state after deletion
+    } catch (error) {
+      toast.error("Error clearing notifications:");
+    }
+  };
+  
+  
+  
   return (
     <>
       <>
@@ -160,6 +200,31 @@ const Header = () => {
                     </li>
                   </>
                 )}
+                <li className="dropdown">
+                  <a
+                    href="#"
+                    className="dropdown-toggle"
+                    data-toggle="dropdown"
+                    role="button"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                    <i className="fas fa-bell"></i>
+                    {notifications.length > 0 && <span className="badge">{notifications.length}</span>}
+                  </a>
+                  <ul className="dropdown-menu">
+                    {/* Notification items */}
+                    <li className="notification-header">
+                      <button onClick={handleClearAll}>Clear All</button>
+                    </li>
+                    {notifications.map((notification, index) => (
+                      <li key={index} className="notification-item">
+                        <h4>{notification.title}</h4>
+                        <p>{notification.body}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
               </ul>
               <a
                 href="#"
@@ -169,6 +234,7 @@ const Header = () => {
               >
                 <span />
               </a>
+
             </div>
           </div>
         </nav>
