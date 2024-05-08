@@ -42,7 +42,7 @@ const Header = () => {
             await deleteDoc(notificationRef);
             toast.success("Notification deleted:");
           } else {
-            toast.warn("Notification ID is missing:");
+            // toast.warn("Notification ID is missing:");
           }
         })
       );
