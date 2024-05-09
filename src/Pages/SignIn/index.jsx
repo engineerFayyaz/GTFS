@@ -109,6 +109,7 @@ const SignIn = () => {
     } catch (error) {
       console.error(error.message);
       // Handle sign-up errors (e.g., display error message)
+      toasr.error(error.message);
     }
   };
 
