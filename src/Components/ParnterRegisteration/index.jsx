@@ -6,6 +6,7 @@ import "./partnerregistrationform.css"
 import { Toast } from "bootstrap";
 export const PartnerRegister = () => {
     const db = getFirestore();
+
   const [partnerInfo, setPartnerInfo] = useState({
     companyName: "",
     contactPerson: "",
@@ -21,27 +22,61 @@ export const PartnerRegister = () => {
       [name]: value,
     });
   };
-
+  
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setPartnerInfo({
-      ...partnerInfo,
-      gtfsFiles: file,
-    });
+    const reader = new FileReader();
+  
+    reader.onload = (event) => {
+      const fileData = event.target.result; // File data as base64 string or ArrayBuffer
+  
+      // Update partnerInfo with the file data
+      setPartnerInfo({
+        ...partnerInfo,
+        gtfsFiles: fileData,
+      });
+    };
+  
+    // Read the file as data URL (base64 string)
+    reader.readAsDataURL(file);
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-        await setDoc(doc(db, "Par"), {
-           partnerInfo
-          });
-      toast.success('Partner registration successful!');
+      // Check if required fields are filled
+      if (
+        partnerInfo.companyName &&
+        partnerInfo.contactPerson &&
+        partnerInfo.email &&
+        partnerInfo.phone &&
+        partnerInfo.website &&
+        partnerInfo.gtfsFiles
+      ) {
+        // All required fields are filled, proceed with Firestore upload
+        const docRef = await addDoc(collection(db, "PartnersInfo"), partnerInfo);
+        
+        setPartnerInfo({
+          companyName: "",
+          contactPerson: "",
+          email: "",
+          phone: "",
+          website: "",
+          gtfsFiles: null,
+        });
+        toast.success('Partner registration successful!');
+
+      } else {
+        // Required fields are missing, show an error message
+        toast.error('Please fill in all required fields.');
+      }
     } catch (error) {
       console.error('Error registering partner:', error);
       alert('An error occurred. Please try again.');
     }
   };
+  
   return (
     <>
     <ToastContainer />
