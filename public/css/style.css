@@ -11,7 +11,28 @@
   --font-family: "Poppins", sans-serif;
   --white_color: white;
 }
-
+.tools-container
+{
+p{
+  color: #333;
+    line-height: 25px;
+    font-size: 16px;
+  font-family: "Poppins";
+}
+li{
+  margin-bottom: 15px;
+}
+span,li{
+  font-size: 16px;
+}
+h1{
+  font-weight: 700;
+  font-family: "Poppins";
+}
+h2,h3,h4,h5{
+  font-family: "Poppins";
+}
+}
 body {
   font-family: "Inter", sans-serif;
   line-height: 1.5;

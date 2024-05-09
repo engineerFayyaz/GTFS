@@ -15,7 +15,6 @@ const Tools = () => {
             <div
               className="col-6 col-md-6 col-lg-4 my-5"
               data-aos="zoom-in"
-              data-aos-anchor-placement="center-center"
             >
               <div className="service text-center">
                 <img
@@ -24,7 +23,7 @@ const Tools = () => {
                   alt=""
                   className="mb-3"
                 />
-                <a href="">
+                <a href="/FrequencyCalculator">
                   <h3>Service Frequency Calculator</h3>
                 </a>
                 <p>
@@ -37,7 +36,6 @@ const Tools = () => {
             <div
               className="col-6 col-md-6 col-lg-4 my-5"
               data-aos="zoom-in"
-              data-aos-anchor-placement="center-center"
             >
               <div className="service text-center">
                 <img
@@ -46,7 +44,7 @@ const Tools = () => {
                   alt=""
                   className="mb-3"
                 />
-                <a href="">
+                <a href="/SpeedCalculator">
                   <h3>Average Speed Calculator Tool</h3>
                 </a>
                 <p>Calculates the Average Speed based on time and distance</p>
@@ -56,7 +54,7 @@ const Tools = () => {
             <div
               className="col-6 col-md-6 col-lg-4 my-5"
               data-aos="zoom-in"
-              data-aos-anchor-placement="center-center"
+             
             >
               <div className="service text-center">
                 <img
@@ -65,7 +63,7 @@ const Tools = () => {
                   alt=""
                   className="mb-3"
                 />
-                <a href="">
+                <a href="/chartercost">
                   <h3>Service Charter Cost Calculator</h3>
                 </a>
                 <p>
@@ -78,7 +76,7 @@ const Tools = () => {
             <div
               className="col-6 col-md-6 col-lg-4 my-5"
               data-aos="zoom-in"
-              data-aos-anchor-placement="center-center"
+              
             >
               <div className="service text-center">
                 <img
@@ -87,7 +85,7 @@ const Tools = () => {
                   alt=""
                   className="mb-3"
                 />
-                <a href="">
+                <a href="/PeakVehicleEstimator">
                   <h3>Peak Vehicle Estimator</h3>
                 </a>
                 <p>
@@ -100,7 +98,7 @@ const Tools = () => {
             <div
               className="col-6 col-md-6 col-lg-4 my-5"
               data-aos="zoom-in"
-              data-aos-anchor-placement="center-center"
+           
             >
               <div className="service text-center">
                 <img
@@ -122,7 +120,7 @@ const Tools = () => {
             <div
               className="col-6 col-md-6 col-lg-4 my-5"
               data-aos="zoom-in"
-              data-aos-anchor-placement="center-center"
+              
             >
               <div className="service text-center">
                 <img
@@ -131,7 +129,7 @@ const Tools = () => {
                   alt=""
                   className="mb-3"
                 />
-                <a href="">
+                <a href="/Fleetage">
                   <h3>Average Fleet Age</h3>
                 </a>
                 <p>
@@ -144,7 +142,7 @@ const Tools = () => {
             <div
               className="col-6 col-md-6 col-lg-4 my-5"
               data-aos="zoom-in"
-              data-aos-anchor-placement="center-center"
+              
             >
               <div className="service text-center">
                 <img
@@ -166,7 +164,7 @@ const Tools = () => {
             <div
               className="col-6 col-md-6 col-lg-4 my-5"
               data-aos="zoom-in"
-              data-aos-anchor-placement="center-center"
+              
             >
               <div className="service text-center">
                 <img
@@ -188,7 +186,7 @@ const Tools = () => {
             <div
               className="col-6 col-md-6 col-lg-4 my-5"
               data-aos="zoom-in"
-              data-aos-anchor-placement="center-center"
+              
             >
               <div className="service text-center">
                 <img
@@ -210,7 +208,7 @@ const Tools = () => {
             <div
               className="col-6 col-md-6 col-lg-4 my-5"
               data-aos="zoom-in"
-              data-aos-anchor-placement="center-center"
+              
             >
               <div className="service text-center">
                 <img
@@ -233,7 +231,7 @@ const Tools = () => {
             <div
               className="col-6 col-md-6 col-lg-4 my-5"
               data-aos="zoom-in"
-              data-aos-anchor-placement="center-center"
+              
             >
               <div className="service text-center">
                 <img
@@ -255,7 +253,7 @@ const Tools = () => {
             <div
               className="col-6 col-md-6 col-lg-4 my-5"
               data-aos="zoom-in"
-              data-aos-anchor-placement="center-center"
+             
             >
               <div className="service text-center">
                 <img

@@ -8,7 +8,7 @@ const AOSInitializer = ({ children }) => {
     AOS.init({
       // Global settings
       duration: 500, // Animation duration in milliseconds
-      once: false, // Whether to only animate elements once
+      once: true, // Whether to only animate elements once
       easing: 'ease-in-out', // Easing function
       // Add more global settings as needed
     });

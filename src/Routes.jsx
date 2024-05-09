@@ -24,6 +24,11 @@ import ForAuthorities from "./Pages/ForAuthorities";
 import ForOperators from "./Pages/ForOperators";
 import Partner from "./Pages/Partner";
 import { Map } from "./Pages/Map";
+import { FrequencyCalculator } from "./Pages/FrequencyCalculator";
+import { FleetAge } from "./Pages/FleetAge";
+import { SpeedCalculator } from "./Pages/SpeedCalculator";
+import { CharterCost } from "./Pages/CharterCost";
+import { PeakVehicleEstimator } from "./Pages/PeakVehicleEstimator";
 // import Home from "./Pages/Home";
 
 const ProjectRoutes = () => {
@@ -56,6 +61,11 @@ const ProjectRoutes = () => {
             <Route path="/ForOperators" element={<ForOperators />} />
             <Route path="/Partner" element={<Partner />} />
             <Route path="/Map" element={<Map />} />
+            <Route path="/FrequencyCalculator" element={<FrequencyCalculator />} />
+            <Route path="/FleetAge" element={<FleetAge/>} />
+            <Route path="/SpeedCalculator" element={<SpeedCalculator />} />
+            <Route path="/CharterCost" element={<CharterCost />} />
+            <Route path="/PeakVehicleEstimator" element={<PeakVehicleEstimator />} />
           </Routes>
         </Router>
       </React.Suspense>
