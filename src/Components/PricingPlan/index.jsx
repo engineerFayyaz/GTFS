@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Button, Modal } from "bootstrap";
@@ -24,7 +24,16 @@ const PricingPlan = () => {
   };
 
   const getStripePaymentURL = (plan) => {
-    return `https://buy.stripe.com/${plan}?amount=${plans[plan].amount}`; // Replace with actual URL
+    // Mapping plans to their respective Stripe payment URLs
+    const paymentURLs = {
+      bronze: "https://buy.stripe.com/fZe17WfVv56peXu004",
+      silver: "https://buy.stripe.com/5kA6sgeRraqJ3eM8wx",
+      gold: "https://buy.stripe.com/9AQ3g44cN6at6qY6oq",
+      platinum: "https://buy.stripe.com/4gwg2Q7oZcyRaHebIL",
+    };
+
+    // Return the corresponding URL for the plan
+    return paymentURLs[plan];
   };
 
   // Define the plans object
@@ -64,7 +73,7 @@ const PricingPlan = () => {
       <>
         <div className="untree_co-section pb-0 mb-0 p-0">
           <div className="demo">
-          <div className="container">
+            <div className="container">
               <div className="row">
                 {Object.keys(plans).map((planKey) => (
                   <div key={planKey} className="col-md-3 col-sm-6">
