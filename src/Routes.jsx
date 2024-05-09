@@ -29,6 +29,9 @@ import { FleetAge } from "./Pages/FleetAge";
 import { SpeedCalculator } from "./Pages/SpeedCalculator";
 import { CharterCost } from "./Pages/CharterCost";
 import { PeakVehicleEstimator } from "./Pages/PeakVehicleEstimator";
+import { BusStopDesign } from "./Pages/BusStopDesign";
+import { BusStopCapacity } from "./Pages/BusStopCapacity";
+import { TimeTableCreater } from "./Pages/TimeTableCreator";
 // import Home from "./Pages/Home";
 
 const ProjectRoutes = () => {
@@ -66,6 +69,9 @@ const ProjectRoutes = () => {
             <Route path="/SpeedCalculator" element={<SpeedCalculator />} />
             <Route path="/CharterCost" element={<CharterCost />} />
             <Route path="/PeakVehicleEstimator" element={<PeakVehicleEstimator />} />
+            <Route path="/BusStopDesign" element={<BusStopDesign />} />
+            <Route path="/BusStopCapacity" element={<BusStopCapacity />} />
+            <Route path="/TimeTableCreater" element={<TimeTableCreater />} />
           </Routes>
         </Router>
       </React.Suspense>

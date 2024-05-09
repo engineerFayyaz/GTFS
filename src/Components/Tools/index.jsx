@@ -107,7 +107,7 @@ const Tools = () => {
                   alt=""
                   className="mb-3"
                 />
-                <a href="">
+                <a href="/BusStopCapacity">
                   <h3>Bus Stop Capacity Check</h3>
                 </a>
                 <p>
@@ -151,7 +151,7 @@ const Tools = () => {
                   alt=""
                   className="mb-3"
                 />
-                <a href="">
+                <a href="/BusStopDesign">
                   <h3>Bus Stop Design &amp; Sketch</h3>
                 </a>
                 <p>
@@ -195,7 +195,7 @@ const Tools = () => {
                   alt=""
                   className="mb-3"
                 />
-                <a href="">
+                <a href="/TimeTableCreater">
                   <h3>Timetable Creator</h3>
                 </a>
                 <p>

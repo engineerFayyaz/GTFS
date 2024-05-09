@@ -1122,8 +1122,8 @@ nav .dropdown li:hover a{
   position: absolute;
   left: 0;
   bottom: 0;
-  width: 80px;
-  height: 4px;
+  width: 100px;
+  height: 5px;
   background: rgb(2, 143, 194);
 }
 .section-title.text-center:before {
