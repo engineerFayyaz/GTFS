@@ -353,6 +353,9 @@ nav .dropdown li:hover a{
   opacity: 1;
   left: 0;
 }
+.notify-dropdown{
+  right: 0 !important;
+}
 .site-nav .site-navigation .site-menu > li.cta-button a {
   padding: 6px 20px;
   border: 2px solid rgba(255, 255, 255, 0.1);

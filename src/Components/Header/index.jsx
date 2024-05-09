@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from "react";
 // import firebase from "firebase/app";
-import { getAuth, signOut } from "firebase/auth"
-import { getFirestore, collection, onSnapshot, deleteDoc, doc } from "firebase/firestore";
+import { getAuth, signOut } from "firebase/auth";
+import {
+  getFirestore,
+  collection,
+  onSnapshot,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import { Modal, Button, Table } from "react-bootstrap";
 import "firebase/auth";
 const Header = () => {
   const [user, setUser] = useState("");
@@ -17,17 +23,19 @@ const Header = () => {
       setUser(user);
     });
 
-    const unsubscribeNotifications = onSnapshot(collection(db, "notifications"), (snapshot) => {
-      const notificationData = snapshot.docs.map((doc) => doc.data());
-      setNotifications(notificationData);
-    });
+    const unsubscribeNotifications = onSnapshot(
+      collection(db, "notifications"),
+      (snapshot) => {
+        const notificationData = snapshot.docs.map((doc) => doc.data());
+        setNotifications(notificationData);
+      }
+    );
 
     return () => {
       unsubscribe();
       unsubscribeNotifications();
     };
   }, [auth, db]);
-
 
   const handleSignOut = () => {
     auth.signOut();
@@ -37,7 +45,8 @@ const Header = () => {
     try {
       await Promise.all(
         notifications.map(async (notification) => {
-          if (notification.id) { // Check if id exists
+          if (notification.id) {
+            // Check if id exists
             const notificationRef = doc(db, "notifications", notification.id);
             await deleteDoc(notificationRef);
             toast.success("Notification deleted:");
@@ -52,9 +61,11 @@ const Header = () => {
       toast.error("Error clearing notifications:");
     }
   };
-  
-  
-  
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
   return (
     <>
       <>
@@ -184,12 +195,14 @@ const Header = () => {
                       aria-haspopup="true"
                       aria-expanded="false"
                     >
-                      {user.email.split('@')[0]} <span className="caret" />
+                      {user.email.split("@")[0]} <span className="caret" />
                     </a>
                     <ul className="dropdown-menu " style={{ minWidth: "7rem" }}>
                       {/* Dropdown menu items */}
                       <li>
-                        <a href={''} onClick={handleSignOut}  >Logout</a>
+                        <a href={""} onClick={handleSignOut}>
+                          Logout
+                        </a>
                       </li>
                     </ul>
                   </li>
@@ -200,30 +213,13 @@ const Header = () => {
                     </li>
                   </>
                 )}
-                <li className="dropdown">
-                  <a
-                    href="#"
-                    className="dropdown-toggle"
-                    data-toggle="dropdown"
-                    role="button"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  >
-                    <i className="fas fa-bell"></i>
-                    {notifications.length > 0 && <span className="badge">{notifications.length}</span>}
+                <li>
+                  <a>
+                    <i className="fas fa-bell" onClick={handleShow} style={{cursor:"pointer"}}></i>
+                    {notifications.length > 0 && (
+                      <span className="badge">{notifications.length}</span>
+                    )}
                   </a>
-                  <ul className="dropdown-menu">
-                    {/* Notification items */}
-                    <li className="notification-header">
-                      <button onClick={handleClearAll}>Clear All</button>
-                    </li>
-                    {notifications.map((notification, index) => (
-                      <li key={index} className="notification-item">
-                        <h4>{notification.title}</h4>
-                        <p>{notification.body}</p>
-                      </li>
-                    ))}
-                  </ul>
                 </li>
               </ul>
               <a
@@ -234,11 +230,51 @@ const Header = () => {
               >
                 <span />
               </a>
-
             </div>
           </div>
         </nav>
       </>
+
+      <Modal show={show} onHide={handleClose} centered backdrop="static" size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title><b> <i className="fas fa-bell" /> All Notifications </b></Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          
+            <>
+              <div >
+                <Table striped bordered hover responsive>
+                  <thead>
+                    <tr>
+                      <th>Message Title</th>
+                      <th>Message Detail</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {notifications.map((notification, index) => (
+                    <tr key={index}>
+                      <>
+                      <td>{notification.title}</td>
+                      <td>{notification.body}</td>
+                      </>
+                      
+                    </tr>
+                  ))}
+                  </tbody>
+                </Table>
+              </div>
+            </>
+          
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={handleClose}>
+            Close
+          </Button>
+          <Button variant="danger" onClick={handleClearAll}>
+            Clear All
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };

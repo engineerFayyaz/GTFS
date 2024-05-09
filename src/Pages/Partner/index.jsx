@@ -1,11 +1,20 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../../Components/Header";
 import FaqBannner from "../../Components/FaqBanner";
 import TransitTwoImages from "../../Components/TransitTwoImages";
 import FollowUs from "../../Components/FollowUs";
 import Footer from "../../Components/Footer";
-import "./partner.css"
+import "./partner.css";
 const Partner = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const handleAccordionClick = (index) => {
+    if (index === activeIndex) {
+      setActiveIndex(-1);
+    } else {
+      setActiveIndex(index);
+    }
+  };
   return (
     <>
       <Header />
@@ -39,11 +48,18 @@ const Partner = () => {
                   <li className="accordion__item">
                     <a
                       href="javascript:void(0)"
-                      className="accordion__link accordion__link_active"
+                      className={`accordion__link ${
+                        activeIndex === 0 ? "accordion__link_active" : ""
+                      }`}
+                      onClick={() => handleAccordionClick(0)}
                     >
                       NGOs
                     </a>
-                    <ul className="sub-accordion">
+                    <ul
+                      className={`sub-accordion ${
+                        activeIndex === 0 ? "open" : "close"
+                      }`}
+                    >
                       <li className="sub-accordion__item">
                         In collaboration with NGOs, we strive to digitalize
                         cities’ public transport network, aiming to provide safe
@@ -56,10 +72,20 @@ const Partner = () => {
                     </ul>
                   </li>
                   <li className="accordion__item">
-                    <a href="javascript:void(0)" className="accordion__link">
+                    <a
+                      href="javascript:void(0)"
+                      className={`accordion__link ${
+                        activeIndex === 1 ? "accordion__link_active" : ""
+                      }`}
+                      onClick={() => handleAccordionClick(1)}
+                    >
                       Private companies
                     </a>
-                    <ul className="sub-accordion">
+                    <ul
+                      className={`sub-accordion ${
+                        activeIndex === 1 ? "open" : "close"
+                      }`}
+                    >
                       <li className="sub-accordion__item">
                         We partner with companies and private sector
                         organisations, such as CAD/AVL, mobility-as-a-service
@@ -71,10 +97,20 @@ const Partner = () => {
                     </ul>
                   </li>
                   <li className="accordion__item">
-                    <a href="javascript:void(0)" className="accordion__link">
+                    <a
+                      href="javascript:void(0)"
+                      className={`accordion__link ${
+                        activeIndex === 2 ? "accordion__link_active" : ""
+                      }`}
+                      onClick={() => handleAccordionClick(2)}
+                    >
                       Automotive
                     </a>
-                    <ul className="sub-accordion">
+                    <ul
+                      className={`sub-accordion ${
+                        activeIndex === 2 ? "open" : "close"
+                      }`}
+                    >
                       <li className="sub-accordion__item">
                         In partnership with the automotive industry, we
                         collaborate to deliver enhanced value to their customers
@@ -84,10 +120,20 @@ const Partner = () => {
                     </ul>
                   </li>
                   <li className="accordion__item">
-                    <a href="javascript:void(0)" className="accordion__link">
+                    <a
+                      href="javascript:void(0)"
+                      className={`accordion__link ${
+                        activeIndex === 3 ? "accordion__link_active" : ""
+                      }`}
+                      onClick={() => handleAccordionClick(3)}
+                    >
                       Trip planning
                     </a>
-                    <ul className="sub-accordion">
+                    <ul
+                      className={`sub-accordion ${
+                        activeIndex === 3 ? "open" : "close"
+                      }`}
+                    >
                       <li className="sub-accordion__item">
                         We share transit network data, including routes, stops,
                         and schedules, along with GTFS Realtime feeds on arrival
@@ -163,7 +209,11 @@ const Partner = () => {
       <div className="container-image-text mt-5 overflow-hidden partner-img-text">
         <div className="row">
           <div className="col-lg-6 p-5">
-            <img src="/images/images-entour/Santiago+HD+-+Press+.jpeg" className="w-100" alt="" />
+            <img
+              src="/images/images-entour/Santiago+HD+-+Press+.jpeg"
+              className="w-100"
+              alt=""
+            />
           </div>
           <div
             className="col-lg-6 text-box d-flex align-items-center justify-content-center flex-column fs-5 p-3
