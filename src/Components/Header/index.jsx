@@ -109,7 +109,7 @@ const Header = () => {
             await deleteDoc(notificationRef);
             toast.success("Notification deleted:");
           } else {
-            // toast.warn("Notification ID is missing:");
+             toast.warn("Notification ID is missing:");
           }
         })
       );
@@ -127,7 +127,7 @@ const Header = () => {
   return (
     <>
       <>
-      <div className="verify-email">
+      <div className="verify-email d-flex justify-content-center">
         {emailVerificationMessage && (
           <div className="email-verification-message">
             {emailVerificationMessage}{" "}
