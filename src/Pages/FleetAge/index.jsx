@@ -2,6 +2,8 @@ import FaqBannner from "../../Components/FaqBanner";
 import Footer from "../../Components/Footer";
 import Header from "../../Components/Header";
 import Subscribe from "../../Components/Subscribe";
+import { TryToolkitFree } from "../../Components/TryToolkitFree";
+
 export const FleetAge = () => {
   return (
     <>
@@ -98,15 +100,7 @@ export const FleetAge = () => {
               </p>
             </div>
           </div>
-          <div className="row text-center mt-5">
-            <div className="col-md">
-              <a href="/">
-                <button className="btn btn-success px-5 py-4 rounded-4">
-                  <h5 className="mb-0">Try Transport Toolkit For Free</h5>
-                </button>
-              </a>
-            </div>
-          </div>
+          <TryToolkitFree />
         </div>
       </div>
 

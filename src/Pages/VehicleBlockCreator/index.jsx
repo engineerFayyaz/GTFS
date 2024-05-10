@@ -3,6 +3,7 @@ import FaqBannner from "../../Components/FaqBanner";
 import Footer from "../../Components/Footer";
 import Header from "../../Components/Header";
 import Subscribe from "../../Components/Subscribe";
+import { TryToolkitFree } from "../../Components/TryToolkitFree";
 
 export const VehicleBlockCreator = () => {
   return (
@@ -66,13 +67,8 @@ Our Vehicle Block Creator tool will turn your timetables into Vehicle Shifts qui
               </>
             </div>
           </div>
-          <div className="row text-center mt-5">
-            <div className="col-md">
-              <button className="btn btn-success px-5 py-4 rounded-4">
-                <h5 className="mb-0">Try Transport Toolkit For Free</h5>
-              </button>
-            </div>
-          </div>
+                    <TryToolkitFree />
+
         </div>
       </div>
 

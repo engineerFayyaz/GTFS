@@ -3,6 +3,7 @@ import FaqBannner from "../../Components/FaqBanner";
 import Footer from "../../Components/Footer";
 import Header from "../../Components/Header";
 import Subscribe from "../../Components/Subscribe";
+import { TryToolkitFree } from "../../Components/TryToolkitFree";
 
 export const PeakVehicleEstimator = () => {
   return (
@@ -89,13 +90,8 @@ export const PeakVehicleEstimator = () => {
             </div>
             <p>This tool is available under our Silver, Gold and Platinum packages. Refer to our <b>Pricing</b> page for more information.</p>
           </div>
-          <div className="row text-center mt-5">
-            <div className="col-md">
-              <button className="btn btn-success px-5 py-4 rounded-4">
-                <h5 className="mb-0">Try Transport Toolkit For Free</h5>
-              </button>
-            </div>
-          </div>
+                    <TryToolkitFree />
+
         </div>
       </div>
 

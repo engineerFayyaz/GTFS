@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Container, Row, Col, Form, Alert, Button } from 'react-bootstrap';
 import Header from '../../Components/Header';
 import Footer from '../../Components/Footer';
+import { TryToolkitFree } from "../../Components/TryToolkitFree";
 
 function ServiceFrequencyCalculator() {
     const [frequency, setFrequency] = useState('');
