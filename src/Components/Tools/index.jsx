@@ -70,7 +70,7 @@ const Tools = () => {
                       </i>
                       <a
                         className="text-light"
-                        href="/speedcalculator"
+                        href="/SpeedCalculator"
                       >
                         Average Speed Calculator Tool
                       </a>
@@ -78,7 +78,7 @@ const Tools = () => {
                     <p>
                       Calculates the Average Speed based on time and distance
                     </p>
-                    <a href="/speedcalculator">
+                    <a href="/AverageSpeedCalculator">
                       Check Now
                     </a>
                   </div>
@@ -105,7 +105,7 @@ const Tools = () => {
                       </i>
                       <a
                         className="text-light"
-                        href="/resources"
+                        href="/chartercost"
                       >
                         Service Charter Cost Calculator
                       </a>
@@ -114,7 +114,7 @@ const Tools = () => {
                       Calculate the service cost based on time and distance
                       variables
                     </p>
-                    <a href="/resources">
+                    <a href="/chartercost">
                       Check Now
                     </a>
                   </div>
@@ -141,7 +141,7 @@ const Tools = () => {
                       </i>
                       <a
                         className="text-light"
-                        href="https://transporttoolkit.com/tools/details/peak-vehicle-estimator"
+                        href="/PeakVehicleEstimator"
                       >
                         Peak Vehicle Estimator
                       </a>
@@ -150,7 +150,7 @@ const Tools = () => {
                       Enter the travel time, layover time, service frequency and
                       we will estimate the number of vehicles required
                     </p>
-                    <a href="https://transporttoolkit.com/tools/peak_vehicle_estimator">
+                    <a href="/PeakVehicleEstimator">
                       Check Now
                     </a>
                   </div>
@@ -177,7 +177,7 @@ const Tools = () => {
                       </i>
                       <a
                         className="text-light"
-                        href="https://transporttoolkit.com/tools/details/bus-stop-check"
+                        href="/BusStopCapacity"
                       >
                         Bus Stop Capacity Check
                       </a>
@@ -186,7 +186,7 @@ const Tools = () => {
                       This tool checks if all scheduled services can be
                       accommodated efficiently within the bus stop
                     </p>
-                    <a href="https://transporttoolkit.com/tools/bus_stop_check">
+                    <a href="/BusStopCapacity">
                       Check Now
                     </a>
                   </div>
@@ -213,7 +213,7 @@ const Tools = () => {
                       </i>
                       <a
                         className="text-light"
-                        href="https://transporttoolkit.com/tools/details/average-fleet-age"
+                        href="/FleetAge"
                       >
                         Average Fleet Age
                       </a>
@@ -222,7 +222,7 @@ const Tools = () => {
                       Calculate the Average Age of your fleet and check you are
                       meeting any age requirements
                     </p>
-                    <a href="https://transporttoolkit.com/tools/average_fleet_age">
+                    <a href="/FleetAge">
                       Check Now
                     </a>
                   </div>
@@ -249,7 +249,7 @@ const Tools = () => {
                       </i>
                       <a
                         className="text-light"
-                        href="https://transporttoolkit.com/tools/details/bus-stop-design"
+                        href="/busstopdesign"
                       >
                         Bus Stop Design &amp; Sketch
                       </a>
@@ -258,7 +258,7 @@ const Tools = () => {
                       Create a sketch of a bus stop including draw in &amp; out
                       and see how many buses it can accommodate
                     </p>
-                    <a href="https://transporttoolkit.com/tools/bus_stop_design">
+                    <a href="/busstopdesign">
                       Check Now
                     </a>
                   </div>
@@ -285,7 +285,7 @@ const Tools = () => {
                       </i>
                       <a
                         className="text-light"
-                        href="https://transporttoolkit.com/tools/details/route-map"
+                        href="/map"
                       >
                         Route Map
                       </a>
@@ -294,7 +294,7 @@ const Tools = () => {
                       This tool creates a route between two or more locations
                       and includes distances and time estimates
                     </p>
-                    <a href="https://transporttoolkit.com/tools/route_map">
+                    <a href="/map">
                       Check Now
                     </a>
                   </div>
@@ -321,7 +321,7 @@ const Tools = () => {
                       </i>
                       <a
                         className="text-light"
-                        href="https://transporttoolkit.com/tools/details/timetable-creator"
+                        href="/timetablecreator"
                       >
                         Timetable Creator
                       </a>
@@ -330,7 +330,7 @@ const Tools = () => {
                       Create a transit timetable within minutes by entering a
                       few variables, no experience required
                     </p>
-                    <a href="https://transporttoolkit.com/tools/timetable_creator">
+                    <a href="/timetablecreator">
                       Check Now
                     </a>
                   </div>
@@ -353,11 +353,12 @@ const Tools = () => {
                           src="/images/icons/block.png"
                           width={120}
                           alt="Vehicle Block Creator"
+                        
                         />
                       </i>
                       <a
                         className="text-light"
-                        href="https://transporttoolkit.com/tools/details/vehicleblock-creator"
+                        href="/vehicleblockcreator"
                       >
                         Vehicle Block Creator
                       </a>
@@ -367,7 +368,7 @@ const Tools = () => {
                       comprehensive breakdown of distance, hours, peak buses and
                       costs
                     </p>
-                    <a href="https://transporttoolkit.com/tools/vehicleblock_creator">
+                    <a href="/vehicleblockcreator">
                       Check Now
                     </a>
                   </div>
@@ -394,7 +395,7 @@ const Tools = () => {
                       </i>
                       <a
                         className="text-light"
-                        href="https://transporttoolkit.com/tools/details/multiple-stop-timetable"
+                        href="/multiple_stop_timetable"
                       >
                         Multiple Stop Timetable
                       </a>
@@ -403,7 +404,7 @@ const Tools = () => {
                       Create a detailed transit timetables with multiple stops
                       and variable running times easily and efficiently
                     </p>
-                    <a href="https://transporttoolkit.com/tools/multiple_stop_timetable">
+                    <a href="/multiple_stop_timetable">
                       Check Now
                     </a>
                   </div>
@@ -430,7 +431,7 @@ const Tools = () => {
                       </i>
                       <a
                         className="text-light"
-                        href="https://transporttoolkit.com/tools/details/travel-time-analyser"
+                        href="/TimeTravelAnalyser"
                       >
                         Travel Time Analyser
                       </a>
@@ -439,7 +440,7 @@ const Tools = () => {
                       Quickly identify how long it takes to travel between
                       multiple locations at different times of the day
                     </p>
-                    <a href="https://transporttoolkit.com/tools/travel_time_analyser">
+                    <a href="/TimeTravelAnalyser">
                       Check Now
                     </a>
                   </div>
@@ -448,7 +449,7 @@ const Tools = () => {
             </div>
           </div>
 
-          {/* <div className="row my-5">
+          <div className="row my-5">
             <div className="col-6 col-md-6 col-lg-4 my-5" data-aos="zoom-in">
               <div className="service text-center">
                 <img
@@ -663,7 +664,7 @@ const Tools = () => {
                 <a href="">more details</a>
               </div>
             </div>
-          </div> */}
+          </div>
         </div>
       </div>
     </>

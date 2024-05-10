@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 // import firebase from "firebase/app";
-import { getAuth, sendEmailVerification,signOut } from "firebase/auth";
+import { getAuth, sendEmailVerification, signOut } from "firebase/auth";
 import {
   getFirestore,
   collection,
@@ -22,9 +22,6 @@ const Header = () => {
   const auth = getAuth();
   const db = getFirestore();
 
-
-
-
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
@@ -36,10 +33,12 @@ const Header = () => {
         const registrationDate = new Date(user.metadata.creationTime);
         const verificationDate = new Date(user.metadata.lastSignInTime);
         const fourteenDaysInMilliseconds = 14 * 24 * 60 * 60 * 1000;
-        
-        const expirationDate = new Date(registrationDate.getTime() + fourteenDaysInMilliseconds);
+
+        const expirationDate = new Date(
+          registrationDate.getTime() + fourteenDaysInMilliseconds
+        );
         const currentDate = new Date();
-        
+
         if (currentDate > expirationDate) {
           signOut(auth).then(() => {
             setUser(null);
@@ -48,8 +47,11 @@ const Header = () => {
             );
           });
         } else {
-          const remainingMilliseconds = expirationDate.getTime() - currentDate.getTime();
-          const remainingDays = Math.ceil(remainingMilliseconds / (1000 * 60 * 60 * 24));
+          const remainingMilliseconds =
+            expirationDate.getTime() - currentDate.getTime();
+          const remainingDays = Math.ceil(
+            remainingMilliseconds / (1000 * 60 * 60 * 24)
+          );
           setRemainingDays(remainingDays);
           setEmailVerificationMessage(
             `Your email is verified. You are logged in for the next ${remainingDays} days.`
@@ -59,7 +61,7 @@ const Header = () => {
         setEmailVerificationMessage("");
       }
     });
-  
+
     const unsubscribeNotifications = onSnapshot(
       collection(db, "notifications"),
       (snapshot) => {
@@ -67,20 +69,12 @@ const Header = () => {
         setNotifications(notificationData);
       }
     );
-  
+
     return () => {
       unsubscribe();
       unsubscribeNotifications();
     };
   }, [auth, db]);
-  
-  
-  
-  
-  
-  
-  
-  
 
   const handleSignOut = () => {
     auth.signOut();
@@ -97,7 +91,6 @@ const Header = () => {
         });
     }
   };
-  
 
   const handleClearAll = async () => {
     try {
@@ -109,7 +102,7 @@ const Header = () => {
             await deleteDoc(notificationRef);
             toast.success("Notification deleted:");
           } else {
-             toast.warn("Notification ID is missing:");
+            toast.warn("Notification ID is missing:");
           }
         })
       );
@@ -127,18 +120,18 @@ const Header = () => {
   return (
     <>
       <>
-      <div className="verify-email d-flex justify-content-center">
-        {emailVerificationMessage && (
-          <div className="email-verification-message">
-            {emailVerificationMessage}{" "}
-            {user && !user.emailVerified && (
-              <a href="#" onClick={handleResendVerificationEmail}>
-                Resend verification email
-              </a>
-            )}
-          </div>
-        )}
-      </div>
+        <div className="verify-email d-flex justify-content-center">
+          {emailVerificationMessage && (
+            <div className="email-verification-message">
+              {emailVerificationMessage}{" "}
+              {user && !user.emailVerified && (
+                <a href="#" onClick={handleResendVerificationEmail}>
+                  Resend verification email
+                </a>
+              )}
+            </div>
+          )}
+        </div>
         <div className="site-mobile-menu site-navbar-target">
           <div className="site-mobile-menu-header">
             <div className="site-mobile-menu-close">
@@ -171,70 +164,132 @@ const Header = () => {
                   >
                     Tools <span className="caret" />
                   </a>
-                  <ul className="dropdown-menu p-3" style={{ width: "900px", top:"3rem", left:"-20rem" }}>
+                  <ul
+                    className="dropdown-menu p-3"
+                    style={{ width: "900px",left: "-20rem" }}
+                  >
                     {/* Dropdown menu items */}
                     <div className="row">
                       <div className="col-md-4">
                         <li>
-                        <img src="/images/icons/online.png" width={30} alt="" /><a href="/T1Enroute"> Service Frequency Calculator </a>
+                          <img
+                            src="/images/icons/online.png"
+                            width={30}
+                            alt=""
+                          />
+                          <a  href="/frequencycalculator"
+                          >
+                            {" "}
+                            Service Frequency Calculator{" "}
+                          </a>
                         </li>
                       </div>
                       <div className="col-md-4">
                         <li>
-                        <img src="/images/icons/speedometer.png" width={30} alt="" /><a href="/T1Enroute"> Average Speed Calculator </a>
+                          <img
+                            src="/images/icons/speedometer.png"
+                            width={30}
+                            alt=""
+                          />
+                          <a href="/SpeedCalculator"> Average Speed Calculator </a>
                         </li>
                       </div>
                       <div className="col-md-4">
                         <li>
-                        <img src="/images/icons/calculator.png" width={30} alt="" /><a href="/T1Enroute"> Charter Cost Calculator </a>
-                        </li>
-                      </div>
-
-                      <div className="col-md-4">
-                        <li>
-                        <img src="/images/icons/bus.png" width={30} alt="" /><a href="/T1Enroute"> Peak Vehicle Estimator </a>
-                        </li>
-                      </div>
-                      <div className="col-md-4">
-                        <li>
-                        <img src="/images/icons/hand.png" width={30} alt="" /><a href="/T1Enroute"> Bus Stop Capacity Calculator </a>
-                        </li>
-                      </div>
-                      <div className="col-md-4">
-                        <li>
-                        <img src="/images/icons/plane.png" width={30} alt="" /><a href="/T1Enroute"> Average Fleet Age </a>
-                        </li>
-                      </div>
-
-                      <div className="col-md-4">
-                        <li>
-                        <img src="/images/icons/online.png" width={30} alt="" /><a href="/T1Enroute"> Enroute </a>
-                        </li>
-                      </div>
-                      <div className="col-md-4">
-                        <li>
-                        <img src="/images/icons/online.png" width={30} alt="" /><a href="/T1Enroute"> Enroute </a>
-                        </li>
-                      </div>
-                      <div className="col-md-4">
-                        <li>
-                        <img src="/images/icons/online.png" width={30} alt="" /><a href="/T1Enroute"> Enroute </a>
+                          <img
+                            src="/images/icons/calculator.png"
+                            width={30}
+                            alt=""
+                          />
+                          <a href="/chartercost"> Charter Cost Calculator </a>
                         </li>
                       </div>
 
                       <div className="col-md-4">
                         <li>
-                        <img src="/images/icons/online.png" width={30} alt="" /><a href="/T1Enroute"> Enroute </a>
+                          <img src="/images/icons/delivery.png" width={30} alt="" />
+                          <a href="/PeakVehicleEstimator"> Peak Vehicle Estimator </a>
                         </li>
                       </div>
                       <div className="col-md-4">
                         <li>
-                        <img src="/images/icons/online.png" width={30} alt="" /><a href="/T1Enroute"> Enroute </a>
+                          <img src="/images/icons/hand.png" width={30} alt="" />
+                          <a href="/BusStopCapacity">
+                            {" "}
+                            Bus Stop Capacity Calculator{" "}
+                          </a>
                         </li>
                       </div>
                       <div className="col-md-4">
                         <li>
-                        <img src="/images/icons/online.png" width={30} alt="" /><a href="/T1Enroute"> Enroute </a>
+                          <img
+                            src="/images/icons/plane.png"
+                            width={30}
+                            alt=""
+                          />
+                          <a href="/FleetAge"> Average Fleet Age </a>
+                        </li>
+                      </div>
+
+                      <div className="col-md-4">
+                        <li>
+                          <img
+                            src="/images/icons/bus.png"
+                            width={30}
+                            alt=""
+                          />
+                          <a href="/busstopdesign"> Bus Stop Design & Sketch </a>
+                        </li>
+                      </div>
+                      <div className="col-md-4">
+                        <li>
+                          <img
+                            src="/images/icons/map.png"
+                            width={30}
+                            alt=""
+                          />
+                          <a  href="/map"> Route Map </a>
+                        </li>
+                      </div>
+                      <div className="col-md-4">
+                        <li>
+                          <img
+                            src="/images/icons/calendar.png"
+                            width={30}
+                            alt=""
+                          />
+                          <a href="/timetablecreator"> Timetable Creater </a>
+                        </li>
+                      </div>
+
+                      <div className="col-md-4">
+                        <li>
+                          <img
+                            src="/images/icons/online.png"
+                            width={30}
+                            alt=""
+                          />
+                          <a href="/vehicleblockcreator"> Vehicle Block Creater </a>
+                        </li>
+                      </div>
+                      <div className="col-md-4">
+                        <li>
+                          <img
+                            src="/images/icons/timetable.png"
+                            width={30}
+                            alt=""
+                          />
+                          <a href="/multiple_stop_timetable"> Multiple Stop Timetable </a>
+                        </li>
+                      </div>
+                      <div className="col-md-4">
+                        <li>
+                          <img
+                            src="/images/icons/change.png"
+                            width={30}
+                            alt=""
+                          />
+                          <a href="/TimeTravelAnalyser"> Travel Time Analyser </a>
                         </li>
                       </div>
                     </div>
@@ -400,6 +455,7 @@ const Header = () => {
         centered
         backdrop="static"
         size="lg"
+        responsive
       >
         <Modal.Header closeButton>
           <Modal.Title>
@@ -425,15 +481,9 @@ const Header = () => {
                       <>
                         <td>{notification.title}</td>
                         <td>{notification.body}</td>
-                        <td>{notification.title}</td>
-                        <td>{notification.body}</td>
                       </>
                     </tr>
                   ))}
-                </tbody>
-              </Table>
-            </div>
-          </>
                 </tbody>
               </Table>
             </div>
@@ -447,10 +497,7 @@ const Header = () => {
             Clear All
           </Button>
         </Modal.Footer>
-        
       </Modal>
-      
-      
     </>
   );
 };

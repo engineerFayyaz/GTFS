@@ -1,10 +1,40 @@
-import React from "react";
+import React, { useState } from "react";
 import Header from "../../Components/Header";
 import Footer from "../../Components/Footer";
+import { getFirestore, addDoc,collection, doc } from "firebase/firestore";
+import {toast, ToastContainer} from "react-toastify"
 
 const Contact = () => {
+    const db = getFirestore();
+    const [firstname, setFirstName] = useState("");
+    const [lastname, setLastName] = useState("");
+    const [email, setEmail] = useState("");
+    const [message, setMessage] = useState("");
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const docRef = addDoc(collection(db, "ContactInfo"), {
+                firstname,
+                lastname,
+                email,
+                message
+            })
+            toast.success("Your message has been sent, we will get in touch with you soon!");
+            console.log("details is:", docRef)
+            setFirstName("");
+            setLastName("");
+            setEmail("");
+            setMessage("");
+        } catch (error) {
+            toast.error("An error has occurred while sending the message", error.message)
+            console.log("An error has occurred while sending the message", error.message)
+        }
+    }
+  
     return (
         <>
+        <ToastContainer />
             <Header />
             <>
                 <div className="hero hero-inner">
@@ -31,6 +61,7 @@ const Contact = () => {
                                     className="contact-form"
                                     data-aos="fade-up"
                                     data-aos-delay={200}
+                                    onSubmit={handleSubmit}
                                 >
                                     <div className="row">
                                         <div className="col-6">
@@ -38,7 +69,10 @@ const Contact = () => {
                                                 <label className="text-black" htmlFor="fname">
                                                     First name
                                                 </label>
-                                                <input type="text" className="form-control" id="fname" />
+                                                <input type="text" placeholder="first name" className="form-control" id="fname" required
+                                                value={firstname}
+                                                onChange={(e) => setFirstName(e.target.value)}
+                                                />
                                             </div>
                                         </div>
                                         <div className="col-6">
@@ -46,7 +80,10 @@ const Contact = () => {
                                                 <label className="text-black" htmlFor="lname">
                                                     Last name
                                                 </label>
-                                                <input type="text" className="form-control" id="lname" />
+                                                <input type="text" className="form-control" placeholder="last name" required id="lname"
+                                                 value={lastname}
+                                                 onChange={(e) => setLastName(e.target.value)}
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -54,7 +91,10 @@ const Contact = () => {
                                         <label className="text-black" htmlFor="email">
                                             Email address
                                         </label>
-                                        <input type="email" className="form-control" id="email" />
+                                        <input type="email" placeholder="name@gmail.com" className="form-control" id="email" 
+                                         value={email}
+                                         onChange={(e) => setEmail(e.target.value)}
+                                        />
                                     </div>
                                     <div className="form-group">
                                         <label className="text-black" htmlFor="message">
@@ -67,6 +107,11 @@ const Contact = () => {
                                             cols={30}
                                             rows={5}
                                             defaultValue={""}
+                                            placeholder="enter your message"
+                                            required
+
+                                            value={message}
+                                            onChange={(e) => setMessage(e.target.value)}
                                         />
                                     </div>
                                     <button type="submit" className="btn btn-primary">
@@ -76,18 +121,18 @@ const Contact = () => {
                             </div>
                             <div className="col-lg-5 ml-auto">
                                 <div className="quick-contact-item d-flex align-items-center mb-4">
-                                    <span className="flaticon-house" />
-                                    <address className="text">
+                                    <i className="fa-solid fa-house flaticon-house" />
+                                    <address className="text mb-0">
                                         155 Market St #101, Paterson, NJ 07505, United States
                                     </address>
                                 </div>
                                 <div className="quick-contact-item d-flex align-items-center mb-4">
-                                    <span className="flaticon-phone-call" />
-                                    <address className="text">+1 202 2020 200</address>
+                                    <i className="fa-solid fa-phone flaticon-phone-call" />
+                                    <address className="text mb-0">+1 202 2020 200</address>
                                 </div>
                                 <div className="quick-contact-item d-flex align-items-center mb-4">
-                                    <span className="flaticon-mail" />
-                                    <address className="text">@info@mydomain.com</address>
+                                    <i className="fa-solid fa-envelope flaticon-mail" />
+                                    <address className="text mb-0">@info@mydomain.com</address>
                                 </div>
                             </div>
                         </div>

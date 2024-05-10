@@ -1610,20 +1610,25 @@ button:hover {
 }
 
 input[type="text"],
-textarea {
+#message, input[type="email"] {
   display: block;
   width: 100%;
   padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
+  font-family: "Poppins";
+  border: 2px solid #e0dfdf;
   border-radius: 4px;
   box-sizing: border-box;
   resize: none;
+  transition: all .3s ease-in;
 }
 
+label{
+  font-weight: 600;
+  font-family: "Poppins";
+}
 input[type="text"]:focus,
-textarea:focus {
-  border-color: #4caf50;
+#message:focus, input[type="email"]:focus {
+  border-color: rgb(190, 188, 188);
   outline: none;
 }
 

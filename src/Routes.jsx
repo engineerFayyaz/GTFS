@@ -34,6 +34,9 @@ import { BusStopCapacity } from "./Pages/BusStopCapacity";
 import { TimeTableCreater } from "./Pages/TimeTableCreator";
 import ServiceFrequencyCalculator from "./Pages/ServiceFrequencyCalculator";
 import AverageSpeedCalculator from "./Pages/AverageSpeedCalculator";
+import { TimeTravelAnalyser } from "./Pages/TravelTimeAnalyser";
+import { VehicleBlockCreator } from "./Pages/VehicleBlockCreator";
+import { MultipleStopTimetable } from "./Pages/MultipleStopTimetable";
 // import Home from "./Pages/Home";
 
 const ProjectRoutes = () => {
@@ -76,6 +79,9 @@ const ProjectRoutes = () => {
             <Route path="/TimeTableCreater" element={<TimeTableCreater />} />
             <Route path="/Service-Frequency-Calculator" element={<ServiceFrequencyCalculator/>}/>
             <Route path="/Average-Speed-Calculator" element={<AverageSpeedCalculator/>}/>
+            <Route path="/TimeTravelAnalyser" element={<TimeTravelAnalyser/>}/>
+            <Route path="/VehicleBlockCreator" element={<VehicleBlockCreator />} />
+            <Route path="/multiple_stop_timetable" element={<MultipleStopTimetable />} />
           </Routes>
         </Router>
       </React.Suspense>
