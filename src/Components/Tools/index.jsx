@@ -30,7 +30,7 @@ const Tools = () => {
                   Calculate and convert service frequency to trips per hour and
                   vice versa
                 </p>
-                <a href="">more details</a>
+                <a href="/Service-Frequency-Calculator">more details</a>
               </div>
             </div>
             <div
@@ -44,7 +44,7 @@ const Tools = () => {
                   alt=""
                   className="mb-3"
                 />
-                <a href="/SpeedCalculator">
+                <a href="/Average-Speed-Calculator">
                   <h3>Average Speed Calculator Tool</h3>
                 </a>
                 <p>Calculates the Average Speed based on time and distance</p>
