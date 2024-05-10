@@ -90,6 +90,86 @@ const Header = () => {
                 <li className="active">
                   <a href="/">GTFS</a>
                 </li>
+                <li className="dropdown">
+                  <a
+                    href="#"
+                    className="dropdown-toggle"
+                    data-toggle="dropdown"
+                    role="button"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                    Tools <span className="caret" />
+                  </a>
+                  <ul className="dropdown-menu p-3" style={{ width: "900px", top:"3rem", left:"-20rem" }}>
+                    {/* Dropdown menu items */}
+                    <div className="row">
+                      <div className="col-md-4">
+                        <li>
+                        <img src="/images/icons/online.png" width={30} alt="" /><a href="/T1Enroute"> Service Frequency Calculator </a>
+                        </li>
+                      </div>
+                      <div className="col-md-4">
+                        <li>
+                        <img src="/images/icons/speedometer.png" width={30} alt="" /><a href="/T1Enroute"> Average Speed Calculator </a>
+                        </li>
+                      </div>
+                      <div className="col-md-4">
+                        <li>
+                        <img src="/images/icons/calculator.png" width={30} alt="" /><a href="/T1Enroute"> Charter Cost Calculator </a>
+                        </li>
+                      </div>
+
+                      <div className="col-md-4">
+                        <li>
+                        <img src="/images/icons/bus.png" width={30} alt="" /><a href="/T1Enroute"> Peak Vehicle Estimator </a>
+                        </li>
+                      </div>
+                      <div className="col-md-4">
+                        <li>
+                        <img src="/images/icons/hand.png" width={30} alt="" /><a href="/T1Enroute"> Bus Stop Capacity Calculator </a>
+                        </li>
+                      </div>
+                      <div className="col-md-4">
+                        <li>
+                        <img src="/images/icons/plane.png" width={30} alt="" /><a href="/T1Enroute"> Average Fleet Age </a>
+                        </li>
+                      </div>
+
+                      <div className="col-md-4">
+                        <li>
+                        <img src="/images/icons/online.png" width={30} alt="" /><a href="/T1Enroute"> Enroute </a>
+                        </li>
+                      </div>
+                      <div className="col-md-4">
+                        <li>
+                        <img src="/images/icons/online.png" width={30} alt="" /><a href="/T1Enroute"> Enroute </a>
+                        </li>
+                      </div>
+                      <div className="col-md-4">
+                        <li>
+                        <img src="/images/icons/online.png" width={30} alt="" /><a href="/T1Enroute"> Enroute </a>
+                        </li>
+                      </div>
+
+                      <div className="col-md-4">
+                        <li>
+                        <img src="/images/icons/online.png" width={30} alt="" /><a href="/T1Enroute"> Enroute </a>
+                        </li>
+                      </div>
+                      <div className="col-md-4">
+                        <li>
+                        <img src="/images/icons/online.png" width={30} alt="" /><a href="/T1Enroute"> Enroute </a>
+                        </li>
+                      </div>
+                      <div className="col-md-4">
+                        <li>
+                        <img src="/images/icons/online.png" width={30} alt="" /><a href="/T1Enroute"> Enroute </a>
+                        </li>
+                      </div>
+                    </div>
+                  </ul>
+                </li>
                 <li>
                   <a href="/Resources">Resources</a>
                 </li>
@@ -215,7 +295,11 @@ const Header = () => {
                 )}
                 <li>
                   <a>
-                    <i className="fas fa-bell" onClick={handleShow} style={{cursor:"pointer"}}></i>
+                    <i
+                      className="fas fa-bell"
+                      onClick={handleShow}
+                      style={{ cursor: "pointer" }}
+                    ></i>
                     {notifications.length > 0 && (
                       <span className="badge">{notifications.length}</span>
                     )}
@@ -235,36 +319,44 @@ const Header = () => {
         </nav>
       </>
 
-      <Modal show={show} onHide={handleClose} centered backdrop="static" size="lg">
+      <Modal
+        show={show}
+        onHide={handleClose}
+        centered
+        backdrop="static"
+        size="lg"
+      >
         <Modal.Header closeButton>
-          <Modal.Title><b> <i className="fas fa-bell" /> All Notifications </b></Modal.Title>
+          <Modal.Title>
+            <b>
+              {" "}
+              <i className="fas fa-bell" /> All Notifications{" "}
+            </b>
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          
-            <>
-              <div >
-                <Table striped bordered hover responsive>
-                  <thead>
-                    <tr>
-                      <th>Message Title</th>
-                      <th>Message Detail</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {notifications.map((notification, index) => (
+          <>
+            <div>
+              <Table striped bordered hover responsive>
+                <thead>
+                  <tr>
+                    <th>Message Title</th>
+                    <th>Message Detail</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {notifications.map((notification, index) => (
                     <tr key={index}>
                       <>
-                      <td>{notification.title}</td>
-                      <td>{notification.body}</td>
+                        <td>{notification.title}</td>
+                        <td>{notification.body}</td>
                       </>
-                      
                     </tr>
                   ))}
-                  </tbody>
-                </Table>
-              </div>
-            </>
-          
+                </tbody>
+              </Table>
+            </div>
+          </>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="primary" onClick={handleClose}>
