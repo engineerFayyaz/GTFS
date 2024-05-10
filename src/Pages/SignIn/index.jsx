@@ -9,6 +9,7 @@ import {
   GoogleAuthProvider,
   FacebookAuthProvider,
   TwitterAuthProvider,
+  sendEmailVerification,
   signInWithRedirect,
 } from "firebase/auth";
 import "./signin.css";
@@ -72,23 +73,15 @@ const SignIn = () => {
     try {
       setLoading(true);
   
-      // const phoneRegex = /^\d{1,12}$/; 
-      // if (!phoneRegex.test(phoneNumber)) {
-      //   toast.error("Please enter a valid phone number (up to 12 digits).");
-      //   return;
-      // }
- 
-      // const usernameRegex = /^[a-z]+$/; 
-      // if (!usernameRegex.test(username)) {
-      //   toast.error("Username must contain only lowercase letters. not allowed speacial character");
-      //   return;
-      // }
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
-      ); // Updated function call
-      const user = userCredential.user;
+      );
+  
+      // Send email verification
+      await sendEmailVerification(userCredential.user);
+  
       // Store additional user data in Firestore
       const userData = {
         username,
@@ -97,21 +90,68 @@ const SignIn = () => {
         businessName,
         country,
       };
-      await setDoc(doc(db, "RegisteredUsers", user.uid), userData);
-
-      toast.success("Signup Successfully ");
-
-      console.log("Signup Successfully ", userData);
+      await setDoc(doc(db, "RegisteredUsers", userCredential.user.uid), userData);
+  
+      toast.success("Signup Successful. Please verify your email.");
+  
+      console.log("Signup Successful. Please verify your email.", userData);
       setLoading(false);
       setTimeout(() => {
         navigate("/");
       }, 1000);
     } catch (error) {
       console.error(error.message);
-      // Handle sign-up errors (e.g., display error message)
       toast.error(error.message);
     }
   };
+  
+  
+
+  // const handleSignUp = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     setLoading(true);
+  
+  //     // const phoneRegex = /^\d{1,12}$/; 
+  //     // if (!phoneRegex.test(phoneNumber)) {
+  //     //   toast.error("Please enter a valid phone number (up to 12 digits).");
+  //     //   return;
+  //     // }
+ 
+  //     // const usernameRegex = /^[a-z]+$/; 
+  //     // if (!usernameRegex.test(username)) {
+  //     //   toast.error("Username must contain only lowercase letters. not allowed speacial character");
+  //     //   return;
+  //     // }
+  //     const userCredential = await createUserWithEmailAndPassword(
+  //       auth,
+  //       email,
+  //       password
+  //     ); // Updated function call
+  //     const user = userCredential.user;
+  //     // Store additional user data in Firestore
+  //     const userData = {
+  //       username,
+  //       email,
+  //       phoneNumber,
+  //       businessName,
+  //       country,
+  //     };
+  //     await setDoc(doc(db, "RegisteredUsers", user.uid), userData);
+
+  //     toast.success("Signup Successfully ");
+
+  //     console.log("Signup Successfully ", userData);
+  //     setLoading(false);
+  //     setTimeout(() => {
+  //       navigate("/");
+  //     }, 1000);
+  //   } catch (error) {
+  //     console.error(error.message);
+  //     // Handle sign-up errors (e.g., display error message)
+  //     toast.error(error.message);
+  //   }
+  // };
 
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();

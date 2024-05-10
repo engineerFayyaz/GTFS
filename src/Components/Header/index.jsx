@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 // import firebase from "firebase/app";
-import { getAuth, signOut } from "firebase/auth";
+import { getAuth, sendEmailVerification,signOut } from "firebase/auth";
 import {
   getFirestore,
   collection,
@@ -12,17 +12,54 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Modal, Button, Table } from "react-bootstrap";
 import "firebase/auth";
+
 const Header = () => {
   const [user, setUser] = useState("");
   const [notifications, setNotifications] = useState([]);
+  const [emailVerificationMessage, setEmailVerificationMessage] = useState("");
+  const [remainingDays, setRemainingDays] = useState(14); // Initialize remaining days to 14
+
   const auth = getAuth();
   const db = getFirestore();
+
+
+
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
+      if (user && !user.emailVerified) {
+        setEmailVerificationMessage(
+          "Your email is not verified yet. Please check your inbox for the email or resend the verification email."
+        );
+      } else if (user && user.emailVerified) {
+        const registrationDate = new Date(user.metadata.creationTime);
+        const verificationDate = new Date(user.metadata.lastSignInTime);
+        const fourteenDaysInMilliseconds = 14 * 24 * 60 * 60 * 1000;
+        
+        const expirationDate = new Date(registrationDate.getTime() + fourteenDaysInMilliseconds);
+        const currentDate = new Date();
+        
+        if (currentDate > expirationDate) {
+          signOut(auth).then(() => {
+            setUser(null);
+            toast.error(
+              "Your trial period has ended. Please buy the package to continue using the service."
+            );
+          });
+        } else {
+          const remainingMilliseconds = expirationDate.getTime() - currentDate.getTime();
+          const remainingDays = Math.ceil(remainingMilliseconds / (1000 * 60 * 60 * 24));
+          setRemainingDays(remainingDays);
+          setEmailVerificationMessage(
+            `Your email is verified. You are logged in for the next ${remainingDays} days.`
+          );
+        }
+      } else {
+        setEmailVerificationMessage("");
+      }
     });
-
+  
     const unsubscribeNotifications = onSnapshot(
       collection(db, "notifications"),
       (snapshot) => {
@@ -30,16 +67,37 @@ const Header = () => {
         setNotifications(notificationData);
       }
     );
-
+  
     return () => {
       unsubscribe();
       unsubscribeNotifications();
     };
   }, [auth, db]);
+  
+  
+  
+  
+  
+  
+  
+  
 
   const handleSignOut = () => {
     auth.signOut();
   };
+
+  const handleResendVerificationEmail = () => {
+    if (user) {
+      sendEmailVerification(auth.currentUser)
+        .then(() => {
+          toast.success("Verification email sent.");
+        })
+        .catch((error) => {
+          toast.error("Error sending verification email: " + error.message);
+        });
+    }
+  };
+  
 
   const handleClearAll = async () => {
     try {
@@ -51,7 +109,7 @@ const Header = () => {
             await deleteDoc(notificationRef);
             toast.success("Notification deleted:");
           } else {
-            // toast.warn("Notification ID is missing:");
+             toast.warn("Notification ID is missing:");
           }
         })
       );
@@ -69,6 +127,18 @@ const Header = () => {
   return (
     <>
       <>
+      <div className="verify-email d-flex justify-content-center">
+        {emailVerificationMessage && (
+          <div className="email-verification-message">
+            {emailVerificationMessage}{" "}
+            {user && !user.emailVerified && (
+              <a href="#" onClick={handleResendVerificationEmail}>
+                Resend verification email
+              </a>
+            )}
+          </div>
+        )}
+      </div>
         <div className="site-mobile-menu site-navbar-target">
           <div className="site-mobile-menu-header">
             <div className="site-mobile-menu-close">
@@ -317,6 +387,11 @@ const Header = () => {
             </div>
           </div>
         </nav>
+        {/* <div className="remaining-days">
+        {remainingDays > 0 && (
+          <p>Your trial period will end in {remainingDays} days.</p>
+        )}
+      </div> */}
       </>
 
       <Modal
@@ -350,9 +425,15 @@ const Header = () => {
                       <>
                         <td>{notification.title}</td>
                         <td>{notification.body}</td>
+                        <td>{notification.title}</td>
+                        <td>{notification.body}</td>
                       </>
                     </tr>
                   ))}
+                </tbody>
+              </Table>
+            </div>
+          </>
                 </tbody>
               </Table>
             </div>
@@ -366,7 +447,10 @@ const Header = () => {
             Clear All
           </Button>
         </Modal.Footer>
+        
       </Modal>
+      
+      
     </>
   );
 };
