@@ -958,15 +958,19 @@ nav .dropdown li:hover a{
   position: absolute;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.205);
+  background-color: rgba(0, 0, 0, 0.758);
   top: 0;
+}
+.home-slider .hero::before{
+  background-color: rgba(0, 0, 0, 0.224) !important;
+
 }
 .slider-1 {
   background-image: url(../images/images-entour/routes.jpeg);
 }
 .slider-1 .shadow{
   /* background: linear-gradient(90deg, #222222 26%, rgba(73, 73, 73, 0) 100%); */
-  background: linear-gradient(79deg, #222222 36%, rgba(73, 73, 73, 0) 100%);
+  background: linear-gradient(90deg, #222222 36%, rgba(73, 73, 73, 0) 100%);
   position: absolute;
   top: 0;
   left: 0;
