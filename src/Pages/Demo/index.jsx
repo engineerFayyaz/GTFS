@@ -23,7 +23,7 @@ const Demo = () => {
             and passenger experience. Experience the power of real-time data
             firsthand!
           </p>
-          <p>hello(at)busmate.com</p>
+          <p>hello(at)gtfsbuilder.com</p>
         </div>
       </div>
       <hr />

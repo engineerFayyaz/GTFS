@@ -409,7 +409,7 @@ const TermsOfUse = () => {
     <>
       <Header />
       <FaqBannner
-        title="BusMate Terms oF Use"
+        title="GTFS Builder Terms oF Use"
         description="These terms apply to all BaseMate subscribers and your usage of the platform"
       />
       <hr />

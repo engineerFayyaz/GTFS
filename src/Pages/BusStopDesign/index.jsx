@@ -65,7 +65,7 @@ export const BusStopDesign = () => {
                 Also see our Bus Stop Capacity Check Tool to see if the stop is of sufficient length to efficiently handle the number of services using the stop as a setup or pick up location.
                 </p>
                 <p>
-               <u>Bus Stop Capacity Tool Link</u> - <a href=".#">https://busmate.com/tools/bus_stop_check</a>
+               <u>Bus Stop Capacity Tool Link</u> - <a href=".#">https://gtfsbuilder.com/tools/bus_stop_check</a>
                 </p>
                 <p>Need to explain how you would like a bus stop setup, simply create it using this tool and send it to the right person for implementation. Don’t leave any doubt about what is required as our design tool provides you with a distance key across the kerb.</p>
                 <p>This tool is available under our Silver, Gold and Platinum packages. Refer to our <b>Pricing</b>  page for more information.</p>

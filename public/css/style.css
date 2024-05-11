@@ -962,7 +962,15 @@ nav .dropdown li:hover a{
   top: 0;
 }
 .slider-1 {
-  background-image: url(../images/3.jpg);
+  background-image: url(../images/images-entour/ak.png);
+}
+.slider-1 .shadow{
+  background: linear-gradient(90deg, #222222 26%, rgba(73, 73, 73, 0) 100%);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 80%;
+  height: 100%;
 }
 .slider-2 {
   background-image: url(../images/5.jpg);
@@ -2111,7 +2119,8 @@ a {
 
 .pricingTable .currency {
   display: inline-block;
-  font-size: 30px;
+  font-size: 20px;
+  font-weight: 600;
   vertical-align: top;
   margin-top: 8px
 }

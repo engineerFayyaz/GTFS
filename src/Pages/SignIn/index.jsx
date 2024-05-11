@@ -345,7 +345,7 @@ const SignIn = () => {
             <div className="content">
               <h3>New here ?</h3>
               <p>
-                Sign in to Busmate for streamlined GTFS-powered navigation and
+                Sign in to GTFS Builder for streamlined GTFS-powered navigation and
                 live updates.
               </p>
               <button className="transparent" id="sign-up-btn">
@@ -358,7 +358,7 @@ const SignIn = () => {
             <div className="content">
               <h3>One of us ?</h3>
               <p>
-                Sign up with Busmate to access GTFS-powered navigation and
+                Sign up with GTFS Builder to access GTFS-powered navigation and
                 personalized route alerts.
               </p>
               <button className="transparent" id="sign-in-btn">

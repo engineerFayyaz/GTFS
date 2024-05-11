@@ -37,6 +37,7 @@ import AverageSpeedCalculator from "./Pages/AverageSpeedCalculator";
 import { TimeTravelAnalyser } from "./Pages/TravelTimeAnalyser";
 import { VehicleBlockCreator } from "./Pages/VehicleBlockCreator";
 import { MultipleStopTimetable } from "./Pages/MultipleStopTimetable";
+import { GTFSFiles } from "./Pages/GTFSFiles";
 // import Home from "./Pages/Home";
 
 const ProjectRoutes = () => {
@@ -82,6 +83,7 @@ const ProjectRoutes = () => {
             <Route path="/TimeTravelAnalyser" element={<TimeTravelAnalyser/>}/>
             <Route path="/VehicleBlockCreator" element={<VehicleBlockCreator />} />
             <Route path="/multiple_stop_timetable" element={<MultipleStopTimetable />} />
+            <Route path="/GTFS_Files" element={<GTFSFiles />} />
           </Routes>
         </Router>
       </React.Suspense>

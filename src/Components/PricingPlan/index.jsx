@@ -82,7 +82,7 @@ const PricingPlan = () => {
                         {planKey.charAt(0).toUpperCase() + planKey.slice(1)}
                       </h3>
                       <div className="price-value">
-                        <span className="currency">$</span>
+                        <span className="currency">AU$</span>
                         <span className="amount">{plans[planKey].amount}</span>
                         <span className="month">/month per user</span>
                       </div>

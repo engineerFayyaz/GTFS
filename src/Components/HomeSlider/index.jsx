@@ -18,6 +18,7 @@ const HomeSlider = () => {
             <div className="carousel-inner">
               <div className="carousel-item active">
                 <div className="hero slider-1">
+              <div className="shadow"></div>
                   <div className="container">
                     <div className="row align-items-center">
                       <div className="col-lg-8">
@@ -31,7 +32,7 @@ const HomeSlider = () => {
                   </div>
                 </div>
               </div>
-              <div className="carousel-item">
+              {/* <div className="carousel-item">
                 <div className="hero slider-2">
                   <div className="container">
                     <div className="row align-items-center">
@@ -60,16 +61,16 @@ const HomeSlider = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
-            <a className="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+            {/* <a className="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
               <span className="carousel-control-prev-icon" aria-hidden="true"></span>
               <span className="sr-only">Previous</span>
             </a>
             <a className="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
               <span className="carousel-control-next-icon" aria-hidden="true"></span>
               <span className="sr-only">Next</span>
-            </a>
+            </a> */}
           </div>
         </div>
       </div>

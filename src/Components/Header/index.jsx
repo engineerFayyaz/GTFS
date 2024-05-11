@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 // import firebase from "firebase/app";
-import { getAuth, sendEmailVerification, signOut } from "firebase/auth";
+import { getAuth, onAuthStateChanged, sendEmailVerification, signOut } from "firebase/auth";
 import {
   getFirestore,
   collection,
@@ -12,13 +12,13 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Modal, Button, Table } from "react-bootstrap";
 import "firebase/auth";
-
+import { useNavigate } from "react-router-dom";
 const Header = () => {
   const [user, setUser] = useState("");
   const [notifications, setNotifications] = useState([]);
   const [emailVerificationMessage, setEmailVerificationMessage] = useState("");
   const [remainingDays, setRemainingDays] = useState(14); // Initialize remaining days to 14
-
+  const navigate = useNavigate();
   const auth = getAuth();
   const db = getFirestore();
 
@@ -117,6 +117,22 @@ const Header = () => {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
+  // gtfs menu link click handler
+  const handleFileClick = () => {
+
+    onAuthStateChanged(auth, (user) => {
+      if(user){
+        navigate("/GTFS_Files")
+      }
+      else{
+        toast.error("Please login to manage your GTFS filesystem");
+
+        setTimeout(() => {
+          navigate("/signin")
+        },1000)
+      }
+    })
+  }
   return (
     <>
       <>
@@ -150,10 +166,10 @@ const Header = () => {
                 <span className="text-primary" />
               </a>
               <ul className="js-clone-nav d-none d-lg-inline-block text-left site-menu float-right">
-                <li className="active">
-                  <a href="/">GTFS</a>
+                <li className="active" onClick={handleFileClick} >
+                  <a href="#">GTFS</a>
                 </li>
-                <li className="dropdown">
+                {/* <li className="dropdown">
                   <a
                     href="#"
                     className="dropdown-toggle"
@@ -168,7 +184,7 @@ const Header = () => {
                     className="dropdown-menu p-3"
                     style={{ width: "900px",left: "-20rem" }}
                   >
-                    {/* Dropdown menu items */}
+                   
                     <div className="row">
                       <div className="col-md-4">
                         <li>
@@ -294,7 +310,7 @@ const Header = () => {
                       </div>
                     </div>
                   </ul>
-                </li>
+                </li> */}
                 <li>
                   <a href="/Resources">Resources</a>
                 </li>
@@ -312,7 +328,7 @@ const Header = () => {
                     aria-haspopup="true"
                     aria-expanded="false"
                   >
-                    Transit Services <span className="caret" />
+                    About GTFS <span className="caret" />
                   </a>
                   <ul className="dropdown-menu">
                     {/* Dropdown menu items */}
@@ -343,7 +359,7 @@ const Header = () => {
                   </ul>
                 </li>
                 <li>
-                  <a href="/Partner">Partner</a>
+                  <a href="/Partner">How it Works</a>
                 </li>
                 <li className="dropdown">
                   <a
