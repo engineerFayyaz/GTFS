@@ -47,7 +47,7 @@ const ServiceVideo = () => {
         <li>Guide Books</li> */}
               </ul>
               <p>
-                <a href="/services" className="btn btn-primary">
+                <a href="/resources" className="btn btn-primary">
                   Get Started
                 </a>
               </p>

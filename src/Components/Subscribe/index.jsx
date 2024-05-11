@@ -11,12 +11,11 @@ const Subscribe = () => {
                 Lets you Explore the Best. Contact Us Now
               </h2>
               <p className="mb-4 lead text-white text-white-opacity">
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                Excepturi, fugit?
+              Reach out to us today and let's start a conversation about how we can help you achieve your goals
               </p>
               <p className="mb-0">
                 <a
-                  href="/signin"
+                  href="/contact"
                   className="btn btn-outline-white text-white btn-md font-weight-bold"
                 >
                   Get in touch

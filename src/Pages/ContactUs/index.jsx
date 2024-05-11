@@ -44,8 +44,7 @@ const Contact = () => {
                                 <div className="intro-wrap">
                                     <h1 className="mb-0">Contact Us</h1>
                                     <p className="text-white">
-                                        Far far away, behind the word mountains, far from the countries
-                                        Vokalia and Consonantia, there live the blind texts.
+                                    Reach out to us today and let's start a conversation about how we can help you achieve your goals
                                     </p>
                                 </div>
                             </div>

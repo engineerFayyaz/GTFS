@@ -5,6 +5,7 @@ import Footer from "../../Components/Footer"
 import Services from "../../Components/Services";
 import Tools from "../../Components/Tools";
 import { VideoTutorial } from "../../Components/VideoTutorial";
+import { ToolsCards } from "../../Components/ToolsCards";
 
 const Resources = () => {
 
@@ -30,7 +31,8 @@ const Resources = () => {
             </>
         <Services />
         <VideoTutorial />
-        <Tools />
+        {/* <Tools /> */}
+        <ToolsCards />
             <Subscribe />
             <Footer />
         </>

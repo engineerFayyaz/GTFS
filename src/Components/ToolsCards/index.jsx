@@ -1,7 +1,7 @@
 import "./tools.css";
 
 export const ToolsCards = () => {
-    const imgPath = "/images/1.jpg";
+    const imgPath = "/images/curasol img2.jpg";
   return (
     <div className="untree_co-section pb-0">
       <div className="container">
