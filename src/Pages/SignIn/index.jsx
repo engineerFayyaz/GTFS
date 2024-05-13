@@ -50,6 +50,7 @@ const SignIn = () => {
   const handleSignIn = async (e) => {
     e.preventDefault();
     try {
+      
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,

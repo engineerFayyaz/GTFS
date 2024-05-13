@@ -21,7 +21,7 @@ const Contact = () => {
                 message
             })
             toast.success("Your message has been sent, we will get in touch with you soon!");
-            console.log("details is:", docRef)
+          
             setFirstName("");
             setLastName("");
             setEmail("");
