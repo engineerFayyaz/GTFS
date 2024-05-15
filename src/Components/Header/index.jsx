@@ -421,6 +421,9 @@ const Header = () => {
                     <ul className="dropdown-menu " style={{ minWidth: "7rem" }}>
                       {/* Dropdown menu items */}
                       <li>
+                        <a href="/AddTransit">Add Transit</a>
+                      </li>
+                      <li>
                         <a href={""} onClick={handleSignOut}>
                           Logout
                         </a>

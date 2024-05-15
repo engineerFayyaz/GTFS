@@ -1,0 +1,35 @@
+.accordian_agency .card_agency .card_agency_accordian_icon {
+    border-color: rgb(204, 204, 204);
+        border-width: 2;
+        padding:4px 6px;
+        border-radius:5px;
+        font-size:18px;
+        cursor: pointer;
+        transition: all .3s ease-in;
+}
+
+.accordian_agency .card_agency .card_agency_accordian_icon:hover{
+    background-color: #1c2331;
+    border-color: #1c2331;
+    color: white;
+}
+.accordian_agency .card_agency h4{
+    font-size: 16px;
+    color: #556270;
+    font-family: 'Poppins';
+    font-weight: 500;
+}
+.accordian_agency .card_agency h2{
+    font-size: 30px;
+    margin-top: 10px;
+    color: #556270;
+    font-family: 'Poppins';
+    font-weight: 600;
+}
+.accordian_agency .card_agency .card_agency_icon i{
+    transition: all .3s ease-in-out;
+    color: #556270;
+}
+.accordian_agency .card_agency .card_agency_icon i:hover{
+    color: black;
+}
