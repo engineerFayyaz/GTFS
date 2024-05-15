@@ -8,6 +8,7 @@
     "@testing-library/user-event": "^13.5.0",
     "aos": "^2.3.4",
     "bootstrap": "^5.3.3",
+    "dotenv": "^16.4.5",
     "firebase": "^10.11.1",
     "google-map-react": "^2.2.1",
     "google-maps-react": "^2.0.6",
