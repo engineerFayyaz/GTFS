@@ -1,29 +1,167 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import {
+  addDoc,
+  collection,
+  getFirestore,
+  getDocs,
+  doc,
+  deleteDoc,
+  Timestamp
+} from "firebase/firestore"; // Import the Firestore database
 import Header from "../../Components/Header";
 import "./addtransit.css";
-import { Modal, Button } from "react-bootstrap";
+import { Modal } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import Loader from "../../Components/Loader";
 export const AddTransit = () => {
   const [show, setShow] = useState(false);
-
-  const handleClose = () => setShow(false);
+  const [companyInfo, setCompanyInfo] = useState([]);
+  const [loading, setLoading ] = useState(false);
+  const [selectedCompanies, setSelectedCompanies] = useState([]);
   const handleShow = () => setShow(true);
+  const db = getFirestore();
+  const [formData, setFormData] = useState({
+    companyName: "",
+    country: "",
+    timezone: "",
+    language: "",
+    companyDesc: "",
+    companyUrl: "",
+    telephone: "",
+    postalAddress: "",
+    supportemail: "",
+    fareUrl: "",
+    compannyId: "",
+    distanceUnit: "",
+  });
 
+  const handleClose = () => {
+    setShow(false);
+    setFormData({
+      companyName: "",
+      country: "",
+      timezone: "",
+      language: "",
+      companyDesc: "",
+      companyUrl: "",
+      telephone: "",
+      postalAddress: "",
+      supportemail: "",
+      fareUrl: "",
+      compannyId: "",
+      distanceUnit: "",
+    });
+  };
+
+  // fetching company data
+  useEffect(() => {
+    const fetchRoutes = async () => {
+      try {
+        setLoading(true);
+        const querySnapshot = await getDocs(collection(db, "created_agencies"));
+        const routesData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          // createdAt: doc.data().createdAt?.toDate(), // Convert Firestore timestamp to Date object
+          ...doc.data(),
+        }));
+        setCompanyInfo(routesData);
+      } catch (error) {
+        toast.error("Error fetching agencies: ", error);
+        console.log("Error fetching agencies: ", error.code, error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchRoutes();
+  }, [db]);
+  
+  // handel input change
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  // handle form submit
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const createdAt = Timestamp.now(); // Use Firestore Timestamp for createdAt
+      const docData = {
+        ...formData,
+        createdAt: createdAt, // Add createdAt field
+      };
+      const docRef = await addDoc(collection(db, "created_agencies"), docData);
+      setTimeout(() => {
+        toast.success("Data uploaded successfully");
+      },1000)
+      handleClose();
+    } catch (error) {
+      toast.error("Failed to add agency");
+      alert("Failed to add agency");
+      console.log("Failed to add agency", error.message, error.code);
+    } finally{
+      setLoading(false);
+    }
+  };
+   // handle checkbox change
+   const handleCheckboxChange = (id) => {
+    setSelectedCompanies((prevSelected) =>
+      prevSelected.includes(id)
+        ? prevSelected.filter((companyId) => companyId !== id)
+        : [...prevSelected, id]
+    );
+  };
+
+  // handle delete
+  const handleDeleteSelected = async () => {
+    if (window.confirm("Are you sure you want to delete selected companies?")) {
+      try {
+        setLoading(true);
+        await Promise.all(
+          selectedCompanies.map((id) => deleteDoc(doc(db, "created_agencies", id)))
+        );
+        setCompanyInfo(companyInfo.filter((company) => !selectedCompanies.includes(company.id)));
+        setSelectedCompanies([]);
+        setTimeout(() => {
+          toast.success("Selected companies deleted successfully");
+        },1000)
+      } catch (error) {
+        console.error("Error deleting companies: ", error);
+        toast.error("Failed to delete companies");
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  if(loading){
+    return   <Loader />
+  }
+  
   const handleCreate = () => {};
   return (
     <>
+    <ToastContainer />
       <Header />
       <div className="container demo-1 mt-5">
         <header>
-          <h1 style={{ float: "left" }} className="agency_head">Transit Companies</h1>
+          <h1 style={{ float: "left" }} className="agency_head">
+            Transit Companies
+          </h1>
           <div className="col-sm-6 float-end ">
-            <a
-              href="#"
+            <Link
               className="btn btn-default border-0 "
-              onclick="delete_selected()"
+              onClick={handleDeleteSelected} 
             >
               <i className="fa fa-trash">&nbsp;</i>
               Delete
-            </a>
+            </Link>
             <a
               href="uploader/select-gtfs-file.php"
               className="btn btn-default border-0"
@@ -45,8 +183,8 @@ export const AddTransit = () => {
 					</p> */}
           </div>
         </header>
-        <ul className="grid cs-style-1">
-          <div className="row gap-2 agency">
+        <ul className="grid container-fluid p-0 cs-style-1">
+          <div className="row w-100 p-0 gap-1 justify-content-start agency">
             <div className="col-md-3 col-sm-6 col-xs-12">
               <figure className="box_tab_add">
                 <figcaption
@@ -65,42 +203,35 @@ export const AddTransit = () => {
                 </figcaption>
               </figure>
             </div>
-            <div className="col-md-3 col-sm-6 col-xs-12" id="del_13925">
-              <figure>
-                <div
-                  className="box_bg"
-                  onclick="javascript:go_agency('MTM5MjU=');"
-                  style={{ cursor: "pointer" }}
-                  title="Click to manage routes, schedules and trips"
-                >
-                  <p style={{ float: "right" }}>
-                    {/* a class="icon_edit_cont" href="#" onclick="load_data_Agency('13925');if (event) event.stopPropagation();"  title="Edit company details"><i class="fa fa-edit">&nbsp;</i></a */}
-                    <input
-                      type="checkbox"
-                      className="agency_chk u_chk"
-                      defaultValue={13925}
-                      onclick="javascript:if (event) event.stopPropagation();"
-                    />{" "}
-                  </p>
-                  <h3>
-                    <a
-                      className="box_bg_title"
-                      style={{ wordWrap: "break-word" }}
-                      href="/Agencies"
-                    >
-                      Software Company
-                    </a>
-                  </h3>
-                  <p
-                    className="cont_posi"
-                    style={{ wordWrap: "break-word", width: "80%" }}
-                  >
-                    <br />
-                    <small>Created: 2024-05-13 11:09:18</small>
-                  </p>
-                </div>
-              </figure>
+            {companyInfo.map((company, index) => (
+        <div className="col-md-3 col-sm-6 col-xs-12" id={`del_${company.id}`} key={company.id}>
+          <figure>
+            <div
+              className="box_bg w-100"
+              style={{ cursor: "pointer" }}
+              title="Click to manage routes, schedules and trips"
+            >
+              <p style={{ float: "right" }}>
+                <input
+                  type="checkbox"
+                  className="agency_chk u_chk"
+                  checked={selectedCompanies.includes(company.id)}
+                  onChange={() => handleCheckboxChange(company.id)}
+                />{" "}
+              </p>
+              <h3>
+                <Link className="box_bg_title" style={{ wordWrap: "break-word" }} to={`/Agencies/${company.id}`}>
+                  {company.companyName}
+                </Link>
+              </h3>
+              <p className="cont_posi" style={{ wordWrap: "break-word", width: "80%" }}>
+                <br />
+                <small>Created:</small>
+              </p>
             </div>
+          </figure>
+        </div>
+            ))}
           </div>
         </ul>
       </div>
@@ -117,11 +248,11 @@ export const AddTransit = () => {
           <Modal.Title>
             <b>
               {" "}
-              <h3>Create Company</h3> 
+              <h3>Create Company</h3>
             </b>
           </Modal.Title>
         </Modal.Header>
-        <form role="form" method="post" action="" name="myForm" id="myform">
+        <form role="form" name="myForm" id="myform" onSubmit={handleFormSubmit}>
           <div className="modal-body p-4">
             <div className="row">
               <div className="form-group col-sm-9">
@@ -132,25 +263,13 @@ export const AddTransit = () => {
                   type="text"
                   className="form-control"
                   id="name"
-                  name="name"
+                  name="companyName"
                   placeholder="E.g. Brown's Buses"
                   autoComplete="organization"
                   required
+                  value={formData.companyName}
+                  onChange={handleInputChange}
                 />
-              </div>
-              <div className="form-group col-sm-3" >
-                <label htmlFor="agency_id">
-                  Id<span className="requ-left">Required</span>
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="agency_id"
-                  name="agency_id"
-                  onchange="show_service_alert();"
-                  required
-                />
-                <span id="agncy_msg" style={{ color: "red" }} />
               </div>
             </div>
             <div className="row">
@@ -171,10 +290,12 @@ export const AddTransit = () => {
                   type="url"
                   className="form-control"
                   id="website"
-                  name="website"
+                  name="companyUrl"
                   placeholder="Your website URL (E.g. http://....)"
                   required
                   onblur="checkwebsiteurl();"
+                  onChange={handleInputChange}
+                  value={formData.companyUrl}
                 />
               </div>
             </div>
@@ -185,10 +306,12 @@ export const AddTransit = () => {
                 </label>
                 <div className="custom_search_parent">
                   <select
-                    name="tz_country"
+                    name="country"
                     className="custom_search"
                     id="tz_country"
                     required
+                    onChange={handleInputChange}
+                    value={formData.country}
                   >
                     <option value="" disabled="disabled" selected="selected">
                       Select One
@@ -529,10 +652,12 @@ export const AddTransit = () => {
                 </label>
                 <div className="custom_search_parent">
                   <select
-                    name="time_zone"
+                    name="timezone"
                     className="custom_search"
                     id="time_zone"
                     required
+                    onChange={handleInputChange}
+                    value={formData.timezone}
                   >
                     <option
                       id="tz_sel_one"
@@ -2129,7 +2254,13 @@ export const AddTransit = () => {
                   Language<span className="requ-left">Required</span>
                 </label>
                 <div className="custom_search_parent">
-                  <select id="lang" name="lang" className="custom_search">
+                  <select
+                    id="lang"
+                    name="language"
+                    className="custom_search"
+                    onChange={handleInputChange}
+                    value={formData.language}
+                  >
                     <option value="" disabled="disabled" selected="selected">
                       Select One
                     </option>
@@ -2356,7 +2487,10 @@ export const AddTransit = () => {
                   </a>
                   {/*/h4 */}
                 </div>
-                <div id="collapseOne" className="panel-collapse collapse out mt-4">
+                <div
+                  id="collapseOne"
+                  className="panel-collapse collapse out mt-4"
+                >
                   <div className="panel-body">
                     <div className="form-group">
                       <label htmlFor="about">
@@ -2365,11 +2499,13 @@ export const AddTransit = () => {
                       </label>
                       <textarea
                         className="form-control"
-                        name="about"
+                        name="companyDesc"
                         id="about"
                         style={{ lineHeight: "normal" }}
                         placeholder="Describe your agency/company"
                         defaultValue={""}
+                        onChange={handleInputChange}
+                        value={formData.companyDesc}
                       />
                     </div>
                     <div className="form-group">
@@ -2381,9 +2517,11 @@ export const AddTransit = () => {
                         type="tel"
                         className="form-control"
                         id="phone"
-                        name="phone"
+                        name="telephone"
                         autoComplete="tel"
                         placeholder="Your customer contact telephone number"
+                        onChange={handleInputChange}
+                        value={formData.telephone}
                       />
                     </div>
                     <div className="form-group">
@@ -2407,8 +2545,10 @@ export const AddTransit = () => {
                         type="url"
                         className="form-control"
                         id="fare_url"
-                        name="fare_url"
+                        name="fareUrl"
                         placeholder="Your fare information URL"
+                        onChange={handleInputChange}
+                        value={formData.fareUrl}
                       />
                     </div>
                     <div className="form-group">
@@ -2420,7 +2560,7 @@ export const AddTransit = () => {
                         type="text"
                         className="form-control"
                         id="mail_address"
-                        name="mail_address"
+                        name="postalAddress"
                         placeholder="Your postal/mailing address"
                         style={{
                           backgroundImage: 'url("data:image/png',
@@ -2430,6 +2570,8 @@ export const AddTransit = () => {
                           cursor: "auto",
                         }}
                         data-temp-mail-org={0}
+                        onChange={handleInputChange}
+                        value={formData.postalAddress}
                       />
                     </div>
                     <div className="form-group">
@@ -2441,7 +2583,7 @@ export const AddTransit = () => {
                         type="email"
                         className="form-control"
                         id="email"
-                        name="email"
+                        name="supportemail"
                         autoComplete="email"
                         placeholder="Your customer support email address"
                         style={{
@@ -2452,6 +2594,8 @@ export const AddTransit = () => {
                           cursor: "auto",
                         }}
                         data-temp-mail-org={1}
+                        onChange={handleInputChange}
+                        value={formData.supportemail}
                       />
                     </div>
                     <div className="form-group">
@@ -2463,8 +2607,10 @@ export const AddTransit = () => {
                         type="text"
                         className="form-control"
                         id="taxnbr"
-                        name="taxnbr"
+                        name="compannyId"
                         placeholder="Your company identifier/tax number"
+                        onChange={handleInputChange}
+                        value={formData.compannyId}
                       />
                     </div>
                     <div className="form-group">
@@ -2474,17 +2620,17 @@ export const AddTransit = () => {
                       </label>
                       <div className="custom_search_parent">
                         <select
-                          name="dist_units"
+                          name="distanceUnit"
                           className="custom_search"
                           id="dist_units"
-                          required
+                          onChange={handleInputChange}
+                          value={formData.distanceUnit}
                         >
                           <option
                             id="du_sel_one"
                             value=""
                             disabled="disabled"
                             selected="selected"
-                            
                           >
                             Select One
                           </option>
@@ -2507,6 +2653,7 @@ export const AddTransit = () => {
               data-dismiss="modal"
               className="btn btn-default"
               type="button"
+              onClick={handleClose}
             >
               Cancel
             </button>
@@ -2521,7 +2668,6 @@ export const AddTransit = () => {
             </button>
           </div>
         </form>
-
       </Modal>
     </>
   );

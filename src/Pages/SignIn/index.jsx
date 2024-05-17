@@ -94,7 +94,7 @@ const SignIn = () => {
       await setDoc(doc(db, "RegisteredUsers", userCredential.user.uid), userData);
   
       toast.success("Signup Successful. Please verify your email.");
-  
+      
       console.log("Signup Successful. Please verify your email.", userData);
       setLoading(false);
       setTimeout(() => {

@@ -87,7 +87,7 @@ const ProjectRoutes = () => {
             <Route path="/multiple_stop_timetable" element={<MultipleStopTimetable />} />
             <Route path="/GTFS_Files" element={<GTFSFiles />} />
             <Route path="/AddTransit" element={<AddTransit />} />
-            <Route path="/Agencies" element={<Agnecies />} />
+            <Route path="/Agencies/:id" element={<Agnecies />} />
           </Routes>
         </Router>
       </React.Suspense>
