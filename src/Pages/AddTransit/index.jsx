@@ -86,6 +86,7 @@ export const AddTransit = () => {
     });
   };
 
+
   // handle form submit
   const handleFormSubmit = async (e) => {
     e.preventDefault();

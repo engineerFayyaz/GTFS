@@ -24,12 +24,14 @@ import Header from "../../Components/Header";
 import "./agencies.css";
 import { Link,useParams } from "react-router-dom";
 import Loader from "../../Components/Loader";
+import { AddStops } from "../../Components/Agencies/AddStops";
 
 export const Agnecies = () => {
   const { id } = useParams(); // Get the id parameter from the URL
   const [loading, setLoading] = useState(true);
   const [show, setShow] = useState(false);
   const [company, setCompany] = useState(null);
+  const [routes, setRoutes] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState("");
   const db = getFirestore();
@@ -43,7 +45,6 @@ export const Agnecies = () => {
     routeColor: "#FFFFFF",
     routeTextColor: "#000000",
   });
-  const [routes, setRoutes] = useState([]);
   const [key, setKey] = useState("home");
   const handleClose = () => {
     setShow(false);
@@ -181,7 +182,7 @@ export const Agnecies = () => {
   return (
     <>
     <ToastContainer />
-      <Header />
+      {/* <Header /> */}
       <div className="container demo-1 mt-5">
         <Breadcrumb>
           <Breadcrumb.Item href="/AddTransit">Transit Companies </Breadcrumb.Item>
@@ -317,7 +318,7 @@ export const Agnecies = () => {
               ))}
             </Tab>
             <Tab eventKey="stops" title="Stops">
-              Tab content for Stops
+             <AddStops />
             </Tab>
             <Tab eventKey="services" title="Services">
               Tab content for Services
