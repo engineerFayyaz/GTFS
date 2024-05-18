@@ -121,15 +121,15 @@ const Header = () => {
   const handleFileClick = () => {
 
     onAuthStateChanged(auth, (user) => {
-      if(user){
+      if (user) {
         navigate("/GTFS_Files")
       }
-      else{
+      else {
         toast.error("Please login to manage your GTFS filesystem");
 
         setTimeout(() => {
           navigate("/signin")
-        },1000)
+        }, 1000)
       }
     })
   }
@@ -168,6 +168,9 @@ const Header = () => {
               <ul className="js-clone-nav d-none d-lg-inline-block text-left site-menu float-right">
                 <li className="active" onClick={handleFileClick} >
                   <a href="#">GTFS</a>
+                </li>
+                <li>
+                <a href="/AddTransit">Transit</a>
                 </li>
                 {/* <li className="dropdown">
                   <a
@@ -311,6 +314,9 @@ const Header = () => {
                     </div>
                   </ul>
                 </li> */}
+
+                
+
                 <li>
                   <a href="/Resources">Resources</a>
                 </li>
