@@ -25,6 +25,7 @@ import "./agencies.css";
 import { Link,useParams } from "react-router-dom";
 import Loader from "../../Components/Loader";
 import { AddStops } from "../../Components/Agencies/AddStops";
+import { AddServices } from "../../Components/Agencies/AddServices";
 
 export const Agnecies = () => {
   const { id } = useParams(); // Get the id parameter from the URL
@@ -321,7 +322,7 @@ export const Agnecies = () => {
              <AddStops />
             </Tab>
             <Tab eventKey="services" title="Services">
-              Tab content for Services
+              <AddServices />
             </Tab>
             <Tab eventKey="route_map" title="Route Map">
               Tab content for Route Map

@@ -440,9 +440,8 @@ export const AddStops = () => {
                     currentPage === totalPages ? "disabled" : ""
                   }`}
                 >
-                  <a
+                  <Link
                     className="page-link"
-                    href="#"
                     onClick={(e) => {
                       e.preventDefault();
                       if (currentPage < totalPages)
@@ -450,7 +449,7 @@ export const AddStops = () => {
                     }}
                   >
                     Next
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
