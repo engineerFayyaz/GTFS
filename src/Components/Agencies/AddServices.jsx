@@ -1,11 +1,174 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Modal } from "react-bootstrap";
-export const AddServices = () => {
-    const [show, setShow] = useState(false);
+import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { toast } from 'react-toastify';
+import {Tooltip} from 'react-tooltip';
 
-    const handleShow = () => setShow(true);
-    const handleClose = () => setShow(false);
+export const AddServices = () => {
+  const [show, setShow] = useState(false);
+  const [services, setServices] = useState([]);
+  const [formData, setFormData] = useState({
+    serviceName: "",
+    startDate: "",
+    endDate: "",
+    days: {
+      monday: false,
+      tuesday: false,
+      wednesday: false,
+      thursday: false,
+      friday: false,
+      saturday: false,
+      sunday: false,
+    },
+    exceptions: [],
+  });
+  const [editingServiceId, setEditingServiceId] = useState(null);
+
+  const db = getFirestore();
+
+  const handleShow = () => setShow(true);
+  const handleClose = () => {
+    setShow(false);
+    setEditingServiceId(null);
+    setFormData({
+      serviceName: "",
+      startDate: "",
+      endDate: "",
+      days: {
+        monday: false,
+        tuesday: false,
+        wednesday: false,
+        thursday: false,
+        friday: false,
+        saturday: false,
+        sunday: false,
+      },
+      exceptions: [],
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      days: {
+        ...prevState.days,
+        [name]: checked,
+      },
+    }));
+  };
+
+  const handleAddException = () => {
+    setFormData((prevState) => ({
+      ...prevState,
+      exceptions: [
+        ...prevState.exceptions,
+        { date: "", availability: "1" },
+      ],
+    }));
+  };
+
+  const handleExceptionChange = (index, field, value) => {
+    const updatedExceptions = [...formData.exceptions];
+    updatedExceptions[index][field] = value;
+    setFormData({ ...formData, exceptions: updatedExceptions });
+  };
+
+  const handleRemoveException = (index) => {
+    const updatedExceptions = [...formData.exceptions];
+    updatedExceptions.splice(index, 1);
+    setFormData({ ...formData, exceptions: updatedExceptions });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingServiceId) {
+        // Update existing service
+        await updateDoc(doc(db, "Agencies_services_data", editingServiceId), formData);
+        toast.success("Service updated successfully");
+      } else {
+        // Add new service
+        await addDoc(collection(db, "Agencies_services_data"), formData);
+        toast.success("Service added successfully");
+      }
+      handleClose();
+      fetchServices();
+    } catch (error) {
+      toast.error("Error saving service data: " + error.message);
+    }
+  };
+
+  const fetchServices = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "Agencies_services_data"));
+      const servicesData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setServices(servicesData);
+    } catch (error) {
+      toast.error("Error fetching services: " + error.message);
+    }
+  };
+
+  const handleEdit = (service) => {
+    setFormData(service);
+    setEditingServiceId(service.id);
+    setShow(true);
+  };
+
+  const handleDelete = async (serviceId) => {
+    if (window.confirm("Are you sure you want to delete this service?")) {
+      try {
+        await deleteDoc(doc(db, "Agencies_services_data", serviceId));
+        setServices(services.filter((service) => service.id !== serviceId));
+        toast.success("Service deleted successfully");
+      } catch (error) {
+        toast.error("Failed to delete service: " + error.message);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  // Helper function to check if a service is available on a specific date
+  const isServiceAvailable = (service, day) => {
+    const dayMap = {
+      monday: 'Mon',
+      tuesday: 'Tue',
+      wednesday: 'Wed',
+      thursday: 'Thu',
+      friday: 'Fri',
+      saturday: 'Sat',
+      sunday: 'Sun'
+    };
+    const exceptions = service.exceptions || [];
+    const dayName = dayMap[day];
+
+    const exception = exceptions.find(exception => {
+      const exceptionDate = new Date(exception.date);
+      const serviceDate = new Date(formData.startDate);
+      serviceDate.setDate(serviceDate.getDate() + dayMap[day.toLowerCase()]);
+      return exceptionDate.getTime() === serviceDate.getTime();
+    });
+
+    if (exception) {
+      return exception.availability === '1';
+    }
+    return service.days[day];
+  };
 
   return (
     <>
@@ -14,17 +177,15 @@ export const AddServices = () => {
           <div className="row d-flex align-items-center justify-content-between my-4">
             <div className="col-sm-4">
               <h3 id="span_msg_calendar">
-                No Services{" "}
-                <a
-                  data-toggle="popover"
-                  data-html="true"
-                  data-trigger="click hover"
-                  title=""
-                  data-content="Create a schedule record for each type of service day. Here's an example:<br></a><img src='services-example.png'/>"
-                  data-original-title="Quick Hint"
+                {services.length === 0
+                  ? "No Services Available"
+                  : `${services.length} Services Available`}
+                <Link
+                  to={"#"}
+                  className="text-dark"
                 >
-                  <i className="fa fa-info-circle" />
-                </a>
+                  <i className="ml-2 fa fa-info-circle" />
+                </Link>
               </h3>
             </div>
             <div className="col-sm-3">
@@ -63,62 +224,94 @@ export const AddServices = () => {
             </div>
             <div className="col-sm-5 text-end">
               <h3 className="optional">
-              <Link
-                    onClick={handleShow}
-                  className="btn btn-outline-primary px-2 py-2 text-dark"
+                <Link
+                  onClick={handleShow}
+                  className="btn btn-outline-dark px-2 py-2 "
                 >
                   <i className="fa fa-plus"></i> add service
                 </Link>
-                <Link
+                {/* <Link
                   id="deleteservicebtn"
-                  className="btn btn-outline-primary px-2 py-2 text-dark ms-2"
-                  onclick="delete_selected_service();"
+                  className="btn btn-outline-dark px-2 py-2  ms-2"
+                  onClick={() => {
+                    const selectedService = services.find(
+                      (service) => service.id === editingServiceId
+                    );
+                    handleDelete(selectedService.id);
+                  }}
                 >
                   <i className="fa fa-trash"></i> Delete Service
-                </Link>
+                </Link> */}
               </h3>
             </div>
           </div>
           <div className="row table">
-          <table
-             id="stops-grid"
-             className="table table-striped table-bordered dataTable"
-             cellSpacing={0}
-             style={{ width: "100%" }}
-             role="grid"
-             aria-describedby="stops-grid_info"
-          >
-            <thead className="w-100">
-              <tr>
-                <th style={{ borderLeft: "none !important" }}></th>
-                <th>Mon</th>
-                <th>Tue</th>
-                <th>Wed</th>
-                <th>Thu</th>
-                <th>Fri</th>
-                <th>Sat</th>
-                <th>Sun</th>
-                <th>Edit</th>
-              </tr>
-            </thead>
-            <tbody id="calendar_tbody">
-            <tr>
-                <td style={{ borderRight: "none !important" }}>
-                  {/* input type="checkbox" id="select_all_services" onclick="remove_service('select_all_services');" / */}
-                </td>
-                <td>Mon</td>
-                <td>Tue</td>
-                <td>Wed</td>
-                <td>Thu</td>
-                <td>Fri</td>
-                <td>Sat</td>
-                <td>Sun</td>
-                <td>Edit</td>
-              </tr>
-            </tbody>
-          </table>
+            <table
+              id="stops-grid"
+              className="table table-striped table-bordered dataTable"
+              cellSpacing={0}
+              style={{ width: "100%" }}
+              role="grid"
+              aria-describedby="stops-grid_info"
+            >
+              <thead className="w-100">
+                <tr>
+                  <th style={{ borderLeft: "none !important" }}></th>
+                  <th>Service Name</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Mon</th>
+                  <th>Tue</th>
+                  <th>Wed</th>
+                  <th>Thu</th>
+                  <th>Fri</th>
+                  <th>Sat</th>
+                  <th>Sun</th>
+                  <th>Edit</th>
+                  <th>Delete</th>
+                </tr>
+              </thead>
+              <tbody id="calendar_tbody">
+                {services.map((service) => (
+                  <tr key={service.id}>
+                    <td style={{ borderRight: "none !important" }}></td>
+                    <td>{service.serviceName}</td>
+                    <td>{service.startDate}</td>
+                    <td>{service.endDate}</td>
+                    {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => (
+                      <td key={day}>
+                        
+                        {isServiceAvailable(service, day) ? <i
+                            className="fa-solid fa-check"
+                            style={{ color: "green" }}
+                          /> : (
+                          <i
+                            className="fa fa-exclamation-triangle"
+                            style={{ color: "red" }}
+                            data-tip="No service available on the selected date"
+                          />
+                        )}
+                        <Tooltip />
+                      </td>
+                    ))}
+                    <td>
+                      <i
+                        className="fa fa-edit"
+                        style={{ cursor: "pointer" }}
+                        title="Edit Route Name & Description"
+                        onClick={() => handleEdit(service)}
+                      />
+                    </td>
+                    <td>
+                      <i className="fa fa-trash"  
+                        style={{ cursor: "pointer" }}
+                      onClick={() => handleDelete(service.id)}></i>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          
         </div>
       </div>
 
@@ -127,397 +320,118 @@ export const AddServices = () => {
         onHide={handleClose}
         centered
         backdrop="static"
-        size="md"
+        size="lg"
         responsive
         className="add_company_modal"
       >
         <Modal.Header closeButton>
-          <Modal.Title>
-            <b>
-              {" "}
-              <h3>Add Services</h3>
-            </b>
-          </Modal.Title>
+          <Modal.Title>Add Service</Modal.Title>
         </Modal.Header>
-        <form id="add_calendar_form" name="add_calendar_form" method="POST">
-  <div className="row">
-    <div className="col-sm-12 fare_rule">
-      <div className="form-group col-md-8">
-        <label htmlFor="service_id">
-          Service Name <span className="requ-lft">Required</span>
-        </label>
-        <input
-          type="text"
-          placeholder='For example: "Weekday", "Sat", "Special"'
-          id="service_name"
-          name="service_name"
-          className="form-control"
-          defaultValue=""
-        />
-      </div>
-      <div className="form-group col-md-4" style={{ display: "none" }}>
-        <label htmlFor="service_id">
-          Service Id<span className="requ-lft">Required</span>
-        </label>
-        <input
-          type="text"
-          onchange="show_service_alert();"
-          placeholder="Service Id"
-          id="service_id"
-          name="service_id"
-          className="form-control"
-          defaultValue=""
-        />
-      </div>
-      <div className="form-group col-md-12">
-        <label>
-          Service Availability <span className="requ-lft">Required</span>
-        </label>
-        <table
-          className="table table-bordered week-table custom_checkbox"
-          style={{ marginBottom: 0 }}
-        >
-          <thead>
-            <tr>
-              <th>Mon</th>
-              <th>Tue</th>
-              <th>Wed</th>
-              <th>Thu</th>
-              <th>Fri</th>
-              <th>Sat</th>
-              <th>Sun</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style={{ width: "14%" }}>
-                <input type="checkbox" id="monday" name="monday" />
-                <input
-                  type="hidden"
-                  id="amonday"
-                  name="amonday"
-                  defaultValue={0}
-                />
-                <label htmlFor="monday" style={{ cursor: "default" }}>
-                  <span
-                    style={{
-                      cursor: "default",
-                      width: "100%",
-                      textAlign: "center",
-                      margin: "4px 0px 0px 0px"
-                    }}
-                  >
-                    <i
-                      style={{ cursor: "pointer" }}
-                      className="fa fa-times change_class_icon grey_color"
-                    />
-                  </span>
-                </label>
-              </td>
-              <td style={{ width: "14%" }}>
-                <input type="checkbox" id="tuesday" name="tuesday" />
-                <input
-                  type="hidden"
-                  id="atuesday"
-                  name="atuesday"
-                  defaultValue={0}
-                />
-                <label htmlFor="tuesday">
-                  <span
-                    style={{
-                      cursor: "default",
-                      width: "100%",
-                      textAlign: "center",
-                      margin: "4px 0px 0px 0px"
-                    }}
-                  >
-                    <i
-                      style={{ cursor: "pointer" }}
-                      className="fa fa-times change_class_icon grey_color"
-                    />
-                  </span>
-                </label>
-              </td>
-              <td style={{ width: "14%" }}>
-                <input type="checkbox" id="wednesday" name="wednesday" />
-                <input
-                  type="hidden"
-                  id="awednesday"
-                  name="awednesday"
-                  defaultValue={0}
-                />
-                <label htmlFor="wednesday">
-                  <span
-                    style={{
-                      cursor: "default",
-                      width: "100%",
-                      textAlign: "center",
-                      margin: "4px 0px 0px 0px"
-                    }}
-                  >
-                    <i
-                      style={{ cursor: "pointer" }}
-                      className="fa fa-times change_class_icon grey_color"
-                    />
-                  </span>
-                </label>
-              </td>
-              <td style={{ width: "14%" }}>
-                <input type="checkbox" id="thursday" name="thursday" />
-                <input
-                  type="hidden"
-                  id="athursday"
-                  name="athursday"
-                  defaultValue={0}
-                />
-                <label htmlFor="thursday">
-                  <span
-                    style={{
-                      cursor: "default",
-                      width: "100%",
-                      textAlign: "center",
-                      margin: "4px 0px 0px 0px"
-                    }}
-                  >
-                    <i
-                      style={{ cursor: "pointer" }}
-                      className="fa fa-times change_class_icon grey_color"
-                    />
-                  </span>
-                </label>
-                <input
-                  type="hidden"
-                  id="hdn_service_id"
-                  name="hdn_service_id"
-                  className="form-control"
-                  defaultValue=""
-                />
-                <input
-                  type="hidden"
-                  id="hdn_file_id"
-                  name="hdn_file_id"
-                  className="form-control"
-                  defaultValue={98477}
-                />
-                <input
-                  type="hidden"
-                  id="hdn_tble_id"
-                  name="hdn_tble_id"
-                  className="form-control"
-                  defaultValue=""
-                />
-              </td>
-              <td style={{ width: "14%" }}>
-                <input type="checkbox" id="friday" name="friday" />
-                <input
-                  type="hidden"
-                  id="afriday"
-                  name="afriday"
-                  defaultValue={0}
-                />
-                <label htmlFor="friday">
-                  <span
-                    style={{
-                      cursor: "default",
-                      width: "100%",
-                      textAlign: "center",
-                      margin: "4px 0px 0px 0px"
-                    }}
-                  >
-                    <i
-                      style={{ cursor: "pointer" }}
-                      className="fa fa-times change_class_icon grey_color"
-                    />
-                  </span>
-                </label>
-              </td>
-              <td style={{ width: "14%" }}>
-                <input type="checkbox" id="saturday" name="saturday" />
-                <input
-                  type="hidden"
-                  id="asaturday"
-                  name="asaturday"
-                  defaultValue={0}
-                />
-                <label htmlFor="saturday">
-                  <span
-                    style={{
-                      cursor: "default",
-                      width: "100%",
-                      textAlign: "center",
-                      margin: "4px 0px 0px 0px"
-                    }}
-                  >
-                    <i
-                      style={{ cursor: "pointer" }}
-                      className="fa fa-times change_class_icon grey_color"
-                    />
-                  </span>
-                </label>
-              </td>
-              <td style={{ width: "14%" }}>
-                <input type="checkbox" id="sunday" name="sunday" />
-                <input
-                  type="hidden"
-                  id="asunday"
-                  name="asunday"
-                  defaultValue={0}
-                />
-                <label htmlFor="sunday">
-                  <span
-                    style={{
-                      cursor: "default",
-                      width: "100%",
-                      textAlign: "center",
-                      margin: "4px 0px 0px 0px"
-                    }}
-                  >
-                    <i
-                      style={{ cursor: "pointer" }}
-                      className="fa fa-times change_class_icon grey_color"
-                    />
-                  </span>
-                </label>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div className="form-group col-md-6">
-        <label htmlFor="start_date">
-          Start Date<span className="requ-lft">Required</span>
-        </label>
-        <div className="input-group">
-          <input
-            type="text"
-            placeholder=""
-            id="start_date"
-            name="start_date"
-            className="form-control"
-            defaultValue="18 May 2024"
-          />{" "}
-          <span className="input-group-btn color_btn">
-            {" "}
-            <label htmlFor="start_date">
-              <i className="fa fa-calendar" />{" "}
-            </label>{" "}
-          </span>
-        </div>
-        {/* /input-group */}
-      </div>
-      <div className="form-group col-md-6">
-        <label htmlFor="end_date">
-          End Date<span className="requ-lft">Required</span>
-        </label>
-        <div className="input-group">
-          <input
-            type="text"
-            placeholder=""
-            id="end_date"
-            name="end_date"
-            className="form-control"
-            defaultValue="18 May 2025"
-          />{" "}
-          <span className="input-group-btn color_btn">
-            {" "}
-            <label htmlFor="end_date">
-              <i className="fa fa-calendar" />{" "}
-            </label>{" "}
-          </span>
-        </div>
-        {/* /input-group */}
-      </div>
-      <div className="form-group col-md-12">
-        <label>Availability Exceptions</label>
-        <div className="form-group">
-          <div className="cont_select">
-            <div
-              id="add_input_fields_wrap"
-              className="custom_search_parent input_fields_wrap userType"
-            >
-              <div className="exception_run row">
-                <div className="col-sm-5">
-                  <div className="input-group">
+        <Modal.Body>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-3">
+              <label htmlFor="serviceName" className="form-label">
+                Service Name
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="serviceName"
+                name="serviceName"
+                value={formData.serviceName}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="startDate" className="form-label">
+                Start Date
+              </label>
+              <input
+                type="date"
+                className="form-control"
+                id="startDate"
+                name="startDate"
+                value={formData.startDate}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="endDate" className="form-label">
+                End Date
+              </label>
+              <input
+                type="date"
+                className="form-control"
+                id="endDate"
+                name="endDate"
+                value={formData.endDate}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Availability Days</label>
+              <div className="form-check d-flex justify-content-between ">
+                {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => (
+                  <div key={day}>
                     <input
-                      type="text"
-                      className="excp_input form-control"
-                      title="DATE"
-                      id="add_datepick_I2"
-                      name="service_exce_date[]"
-                      placeholder="Select Date"
+                      type="checkbox"
+                      className="form-check-input"
+                      id={day}
+                      name={day}
+                      checked={formData.days[day]}
+                      onChange={handleCheckboxChange}
                     />
-                    <span className="input-group-btn color_btn">
-                      <label htmlFor="add_datepick_I2">
-                        <i className="fa fa-calendar" />
-                      </label>
-                    </span>
+                    <label className="form-check-label" htmlFor={day}>
+                      {day.charAt(0).toUpperCase() + day.slice(1)}
+                    </label>
                   </div>
-                </div>
-                <div className="col-sm-5">
-                  <div className="custom_search_parent">
-                    <select
-                      className="excep_drop custom_search"
-                      name="service_exce_unavailable[]"
-                    >
-                      <option value={1}>Service Available</option>
-                      <option value={2}>Service Unavailable</option>
-                    </select>
-                    <span className="cont_arrow" />
-                  </div>
-                </div>
-                <div className="col-sm-1">
-                  <a href="#" className="remove_field col-sm-1">
-                    <i className="fa fa-trash" />
-                  </a>
-                </div>
-              </div>
-              <div className="exception_run row">
-                <div className="col-sm-5">
-                  <div className="input-group">
-                    <input
-                      type="text"
-                      className="excp_input form-control"
-                      title="DATE"
-                      id="add_datepick_I3"
-                      name="service_exce_date[]"
-                      placeholder="Select Date"
-                    />
-                    <span className="input-group-btn color_btn">
-                      <label htmlFor="add_datepick_I3">
-                        <i className="fa fa-calendar" />
-                      </label>
-                    </span>
-                  </div>
-                </div>
-                <div className="col-sm-5">
-                  <div className="custom_search_parent">
-                    <select
-                      className="excep_drop custom_search"
-                      name="service_exce_unavailable[]"
-                    >
-                      <option value={1}>Service Available</option>
-                      <option value={2}>Service Unavailable</option>
-                    </select>
-                    <span className="cont_arrow" />
-                  </div>
-                </div>
-                <div className="col-sm-1">
-                  <a href="#" className="remove_field col-sm-1">
-                    <i className="fa fa-trash" />
-                  </a>
-                </div>
+                ))}
               </div>
             </div>
-          </div>
-          <button className="add_field_button btn btn-default col-sm-12">
-            <i className="fa fa-warning"> </i>&nbsp; Add Exceptions
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</form>
-
+            <div className="mb-3">
+              <label className="form-label">Exceptions</label>
+              {formData.exceptions.map((exception, index) => (
+                <div key={index} className="mb-2">
+                  <input
+                    type="date"
+                    className="form-control d-inline-block me-2"
+                    style={{ width: "auto" }}
+                    value={exception.date}
+                    onChange={(e) => handleExceptionChange(index, "date", e.target.value)}
+                    required
+                  />
+                  <select
+                    className="form-control d-inline-block me-2"
+                    style={{ width: "auto" }}
+                    value={exception.availability}
+                    onChange={(e) => handleExceptionChange(index, "availability", e.target.value)}
+                    required
+                  >
+                    <option value="1">Available</option>
+                    <option value="0">Unavailable</option>
+                  </select>
+                  <button type="button" className="btn btn-danger" onClick={() => handleRemoveException(index)}>
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <button type="button" className="btn btn-secondary" onClick={handleAddException}>
+                Add Exception
+              </button>
+            </div>
+            <div className="d-flex justify-content-end">
+              <button type="button" className="btn btn-secondary me-2" onClick={handleClose}>
+                Cancel
+              </button>
+              <button type="submit" className="btn btn-primary">
+                {editingServiceId ? "Update Service" : "Add Service"}
+              </button>
+            </div>
+          </form>
+        </Modal.Body>
       </Modal>
     </>
   );

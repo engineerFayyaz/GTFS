@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {toast, ToastContainer} from "react-toastify"
+import { toast, ToastContainer } from "react-toastify";
 import {
   Breadcrumb,
   Tab,
@@ -18,14 +18,18 @@ import {
   doc,
   deleteDoc,
   updateDoc,
-  getDoc
+  getDoc,
 } from "firebase/firestore"; // Import the Firestore database
 import Header from "../../Components/Header";
 import "./agencies.css";
-import { Link,useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import Loader from "../../Components/Loader";
 import { AddStops } from "../../Components/Agencies/AddStops";
 import { AddServices } from "../../Components/Agencies/AddServices";
+import { AddRouteMap } from "../../Components/Agencies/AddRouteMap";
+import { OptionalData } from "../../Components/Agencies/OptionalData";
+import OnlyMap from "../../Components/OnlyMap";
+import { Warnings } from "../../Components/Agencies/Warnings";
 
 export const Agnecies = () => {
   const { id } = useParams(); // Get the id parameter from the URL
@@ -86,7 +90,6 @@ export const Agnecies = () => {
     fetchBlog();
   }, [id]);
 
-
   // fetching data
   useEffect(() => {
     const fetchRoutes = async () => {
@@ -128,7 +131,7 @@ export const Agnecies = () => {
         await updateDoc(doc(db, "agencies_routes_data", editId), formData);
         setTimeout(() => {
           toast.success("Data updated successfully");
-        },1000)
+        }, 1000);
       } else {
         // Add new route
         const docRef = await addDoc(
@@ -137,7 +140,7 @@ export const Agnecies = () => {
         );
         setTimeout(() => {
           toast.success("Data uploaded successfully");
-        },1000)
+        }, 1000);
       }
       handleClose();
     } catch (error) {
@@ -182,11 +185,13 @@ export const Agnecies = () => {
 
   return (
     <>
-    <ToastContainer />
+      <ToastContainer />
       {/* <Header /> */}
       <div className="container demo-1 mt-5">
         <Breadcrumb>
-          <Breadcrumb.Item href="/AddTransit">Transit Companies </Breadcrumb.Item>
+          <Breadcrumb.Item href="/AddTransit">
+            Transit Companies{" "}
+          </Breadcrumb.Item>
           <Breadcrumb.Item active>{company.companyName}</Breadcrumb.Item>
         </Breadcrumb>
         <div className="row">
@@ -224,7 +229,7 @@ export const Agnecies = () => {
           >
             <span />
             <a href="https://codes-inc.com/" target="_blank">
-             {company.companyUrl}
+              {company.companyUrl}
             </a>
           </div>
           <div className="col-sm-3 text-end">
@@ -260,7 +265,7 @@ export const Agnecies = () => {
                   style={{ border: "1px solid #d4d6d7", borderRadius: "10px" }}
                   key={route.id}
                 >
-                  <div className="col-sm-12">
+                  <div className="col-sm-8">
                     <Accordion className="accordian_agency">
                       <Card className="border-0 card_agency">
                         <Card.Header className="d-flex align-items-center gap-4 border-0">
@@ -303,35 +308,47 @@ export const Agnecies = () => {
                           className="px-5"
                         >
                           <Card.Body>
+                            <div className="content">
                             <p className="text-secondary">{route.routeDesc}</p>
                             <p>
-                              Create a Service from{" "}
-                              <Link to="/agencies#services">Services</Link>{" "}
-                              {">>"} Add Service
+                              <button
+                                id="add_stop_btn"
+                                className="btn btn-outline-dark  px-3 py-2"
+                                style={{ marginTop: 0 }}
+                              >
+                                <i className="fa fa-map-marker mr-1"></i>Add
+                                Trip
+                              </button>
                             </p>
+                            </div>
+                            <div className="map">  
+                            {/* <OnlyMap /> */}
+                              </div>   
                           </Card.Body>
                         </Accordion.Collapse>
                       </Card>
                     </Accordion>
                   </div>
-                  <div className="col-sm-4"></div>
+                  <div className="col-sm-4">
+                    
+                  </div>
                 </div>
               ))}
             </Tab>
             <Tab eventKey="stops" title="Stops">
-             <AddStops />
+              <AddStops />
             </Tab>
             <Tab eventKey="services" title="Services">
               <AddServices />
             </Tab>
             <Tab eventKey="route_map" title="Route Map">
-              Tab content for Route Map
+              <AddRouteMap />
             </Tab>
             <Tab eventKey="optional_data" title="Optional Data">
-              Tab content for Optional Data
+              <OptionalData />
             </Tab>
             <Tab eventKey="warning" title="Warnings">
-              Tab content for Warnings
+             <Warnings />
             </Tab>
           </Tabs>
         </div>
