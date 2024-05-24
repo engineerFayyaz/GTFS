@@ -13,6 +13,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import UserHeader from "../../Components/UserHeader";
 import { ToolsCards } from "../../Components/ToolsCards";
+import SaveRouteMap from "../../Components/SaveRouteMap";
 
 const Home = () => {
   useEffect(() => {
@@ -24,7 +25,7 @@ const Home = () => {
       <Header />
       <HomeSlider />
       <Services />
-      {/* <RouteMap /> */}
+      <SaveRouteMap/>
       <ToolsCards />
       {/* <Tools /> */}
       <>
