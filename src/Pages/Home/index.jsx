@@ -13,7 +13,9 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import UserHeader from "../../Components/UserHeader";
 import { ToolsCards } from "../../Components/ToolsCards";
-import SaveRouteMap from "../../Components/SaveRouteMap";
+import { LoadScript } from '@react-google-maps/api';
+import SavedRoutesMap from "../../Components/SavedRoutesMap";
+
 
 const Home = () => {
   useEffect(() => {
@@ -25,7 +27,9 @@ const Home = () => {
       <Header />
       <HomeSlider />
       <Services />
-      <SaveRouteMap/>
+      <LoadScript googleMapsApiKey="AIzaSyBDDCT1y6vpC4jJ3_LGzRnMF6OclbkDEfU" libraries={['places', 'geometry']}>
+      <SavedRoutesMap/>
+      </LoadScript>
       <ToolsCards />
       {/* <Tools /> */}
       <>

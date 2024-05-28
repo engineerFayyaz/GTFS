@@ -30,6 +30,7 @@ import { AddRouteMap } from "../../Components/Agencies/AddRouteMap";
 import { OptionalData } from "../../Components/Agencies/OptionalData";
 import OnlyMap from "../../Components/OnlyMap";
 import { Warnings } from "../../Components/Agencies/Warnings";
+import FirestoreDataDownloader from "../../Components/FirestoreDataDownloader";
 
 export const Agnecies = () => {
   const { id } = useParams(); // Get the id parameter from the URL
@@ -349,6 +350,9 @@ export const Agnecies = () => {
             </Tab>
             <Tab eventKey="warning" title="Warnings">
              <Warnings />
+            </Tab>
+            <Tab eventKey="GTFS Data" title="GTFS-DATA">
+             <FirestoreDataDownloader />
             </Tab>
           </Tabs>
         </div>
