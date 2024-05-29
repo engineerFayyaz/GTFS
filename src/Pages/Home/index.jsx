@@ -27,9 +27,9 @@ const Home = () => {
       <Header />
       <HomeSlider />
       <Services />
-      <LoadScript googleMapsApiKey="AIzaSyBDDCT1y6vpC4jJ3_LGzRnMF6OclbkDEfU" libraries={['places', 'geometry']}>
+      {/* <LoadScript googleMapsApiKey="AIzaSyBDDCT1y6vpC4jJ3_LGzRnMF6OclbkDEfU" libraries={['places', 'geometry']}>
       <SavedRoutesMap/>
-      </LoadScript>
+      </LoadScript> */}
       <ToolsCards />
       {/* <Tools /> */}
       <>

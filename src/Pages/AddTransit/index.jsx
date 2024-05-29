@@ -7,8 +7,12 @@ import {
   getDocs,
   doc,
   deleteDoc,
-  Timestamp
+  Timestamp,
 } from "firebase/firestore"; // Import the Firestore database
+import {
+  getAuth,
+  onAuthStateChanged,
+} from "firebase/auth"; // Import from Firebase Authentication
 import Header from "../../Components/Header";
 import "./addtransit.css";
 import { Modal } from "react-bootstrap";
@@ -19,8 +23,52 @@ export const AddTransit = () => {
   const [companyInfo, setCompanyInfo] = useState([]);
   const [loading, setLoading ] = useState(false);
   const [selectedCompanies, setSelectedCompanies] = useState([]);
+  const [user, setUser] = useState(null); // State to hold user information
+
   const handleShow = () => setShow(true);
+  const isUserLoggedInAndVerified = user && user.emailVerified;
   const db = getFirestore();
+  const auth = getAuth(); // Get auth instance
+  useEffect(() => {
+    // Firebase listener to track user authentication state changes
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in.
+        setUser(user);
+      } else {
+        // No user is signed in.
+        setUser(null);
+      }
+    });
+
+    return () => unsubscribe(); // Cleanup function
+  }, [auth]);
+
+  useEffect(() => {
+    // Fetch company data only if user is logged in and email is verified
+    if (user && user.emailVerified) {
+      const fetchRoutes = async () => {
+        try {
+          setLoading(true);
+          const querySnapshot = await getDocs(collection(db, "created_agencies"));
+          const routesData = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setCompanyInfo(routesData);
+        } catch (error) {
+          toast.error("Error fetching agencies: ", error);
+          console.log("Error fetching agencies: ", error.code, error.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchRoutes();
+    }
+  }, [db, user]);
+
+  
   const [formData, setFormData] = useState({
     companyName: "",
     country: "",
@@ -92,24 +140,30 @@ export const AddTransit = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const createdAt = Timestamp.now(); // Use Firestore Timestamp for createdAt
+      // Check if user is logged in and email is verified before adding transit
+      if (!user || !user.emailVerified) {
+        // Prompt user to login and verify email
+        toast.error("Please login and verify your email.");
+        return;
+      }
+      const createdAt = Timestamp.now();
       const docData = {
         ...formData,
-        createdAt: createdAt, // Add createdAt field
+        createdAt: createdAt,
       };
       const docRef = await addDoc(collection(db, "created_agencies"), docData);
       setTimeout(() => {
         toast.success("Data uploaded successfully");
-      },1000)
+      }, 1000);
       handleClose();
     } catch (error) {
       toast.error("Failed to add agency");
-      alert("Failed to add agency");
       console.log("Failed to add agency", error.message, error.code);
-    } finally{
+    } finally {
       setLoading(false);
     }
   };
+  
    // handle checkbox change
    const handleCheckboxChange = (id) => {
     setSelectedCompanies((prevSelected) =>
@@ -253,6 +307,7 @@ export const AddTransit = () => {
             </b>
           </Modal.Title>
         </Modal.Header>
+        {isUserLoggedInAndVerified ? (
         <form role="form" name="myForm" id="myform" onSubmit={handleFormSubmit}>
           <div className="modal-body p-4">
             <div className="row">
@@ -2669,6 +2724,9 @@ export const AddTransit = () => {
             </button>
           </div>
         </form>
+        ):(
+          <p>Please login and verify your email to add transit.</p>
+        )}
       </Modal>
     </>
   );
