@@ -32,6 +32,7 @@ import OnlyMap from "../../Components/OnlyMap";
 import { Warnings } from "../../Components/Agencies/Warnings";
 import FirestoreDataDownloader from "../../Components/FirestoreDataDownloader";
 import useExportGTFS from "../../Components/ExportGTFS";
+import { AddTrip } from "./components/AddTrip";
 
 export const Agnecies = () => {
   const { id } = useParams(); // Get the id parameter from the URL
