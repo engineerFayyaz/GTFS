@@ -159,7 +159,7 @@ const Header = () => {
           </div>
         </div>
         <nav className="site-nav">
-          <div className="container-fluid px-2 px-md-4">
+          <div className="container-fluid px-2 px-md-2">
             <div className="site-navigation">
               <a href="/" className="logo m-0">
                 <img src="/images/logo white.png" width={200} alt="" />
@@ -169,154 +169,9 @@ const Header = () => {
                 <li className="active" onClick={handleFileClick} >
                   <a href="#">GTFS</a>
                 </li>
-                <li>
+                {/* <li>
                 <a href="/AddTransit">Transit</a>
-                </li>
-                {/* <li className="dropdown">
-                  <a
-                    href="#"
-                    className="dropdown-toggle"
-                    data-toggle="dropdown"
-                    role="button"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  >
-                    Tools <span className="caret" />
-                  </a>
-                  <ul
-                    className="dropdown-menu p-3"
-                    style={{ width: "900px",left: "-20rem" }}
-                  >
-                   
-                    <div className="row">
-                      <div className="col-md-4">
-                        <li>
-                          <img
-                            src="/images/icons/online.png"
-                            width={30}
-                            alt=""
-                          />
-                          <a  href="/frequencycalculator"
-                          >
-                            {" "}
-                            Service Frequency Calculator{" "}
-                          </a>
-                        </li>
-                      </div>
-                      <div className="col-md-4">
-                        <li>
-                          <img
-                            src="/images/icons/speedometer.png"
-                            width={30}
-                            alt=""
-                          />
-                          <a href="/SpeedCalculator"> Average Speed Calculator </a>
-                        </li>
-                      </div>
-                      <div className="col-md-4">
-                        <li>
-                          <img
-                            src="/images/icons/calculator.png"
-                            width={30}
-                            alt=""
-                          />
-                          <a href="/chartercost"> Charter Cost Calculator </a>
-                        </li>
-                      </div>
-
-                      <div className="col-md-4">
-                        <li>
-                          <img src="/images/icons/delivery.png" width={30} alt="" />
-                          <a href="/PeakVehicleEstimator"> Peak Vehicle Estimator </a>
-                        </li>
-                      </div>
-                      <div className="col-md-4">
-                        <li>
-                          <img src="/images/icons/hand.png" width={30} alt="" />
-                          <a href="/BusStopCapacity">
-                            {" "}
-                            Bus Stop Capacity Calculator{" "}
-                          </a>
-                        </li>
-                      </div>
-                      <div className="col-md-4">
-                        <li>
-                          <img
-                            src="/images/icons/plane.png"
-                            width={30}
-                            alt=""
-                          />
-                          <a href="/FleetAge"> Average Fleet Age </a>
-                        </li>
-                      </div>
-
-                      <div className="col-md-4">
-                        <li>
-                          <img
-                            src="/images/icons/bus.png"
-                            width={30}
-                            alt=""
-                          />
-                          <a href="/busstopdesign"> Bus Stop Design & Sketch </a>
-                        </li>
-                      </div>
-                      <div className="col-md-4">
-                        <li>
-                          <img
-                            src="/images/icons/map.png"
-                            width={30}
-                            alt=""
-                          />
-                          <a  href="/map"> Route Map </a>
-                        </li>
-                      </div>
-                      <div className="col-md-4">
-                        <li>
-                          <img
-                            src="/images/icons/calendar.png"
-                            width={30}
-                            alt=""
-                          />
-                          <a href="/timetablecreator"> Timetable Creater </a>
-                        </li>
-                      </div>
-
-                      <div className="col-md-4">
-                        <li>
-                          <img
-                            src="/images/icons/online.png"
-                            width={30}
-                            alt=""
-                          />
-                          <a href="/vehicleblockcreator"> Vehicle Block Creater </a>
-                        </li>
-                      </div>
-                      <div className="col-md-4">
-                        <li>
-                          <img
-                            src="/images/icons/timetable.png"
-                            width={30}
-                            alt=""
-                          />
-                          <a href="/multiple_stop_timetable"> Multiple Stop Timetable </a>
-                        </li>
-                      </div>
-                      <div className="col-md-4">
-                        <li>
-                          <img
-                            src="/images/icons/change.png"
-                            width={30}
-                            alt=""
-                          />
-                          <a href="/TimeTravelAnalyser"> Travel Time Analyser </a>
-                        </li>
-                      </div>
-                    </div>
-                  </ul>
                 </li> */}
-
-                
-
                 <li>
                   <a href="/Resources">Resources</a>
                 </li>

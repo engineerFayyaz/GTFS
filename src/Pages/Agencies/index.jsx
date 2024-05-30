@@ -20,7 +20,7 @@ import {
   updateDoc,
   getDoc,
 } from "firebase/firestore"; // Import the Firestore database
-import Header from "../../Components/Header";
+// import Header from "../../Components/Header";
 import "./agencies.css";
 import { Link, useParams } from "react-router-dom";
 import Loader from "../../Components/Loader";
@@ -31,6 +31,7 @@ import { OptionalData } from "../../Components/Agencies/OptionalData";
 import OnlyMap from "../../Components/OnlyMap";
 import { Warnings } from "../../Components/Agencies/Warnings";
 import FirestoreDataDownloader from "../../Components/FirestoreDataDownloader";
+import { AddTrip } from "./components/AddTrip";
 
 export const Agnecies = () => {
   const { id } = useParams(); // Get the id parameter from the URL
@@ -312,14 +313,7 @@ export const Agnecies = () => {
                             <div className="content">
                             <p className="text-secondary">{route.routeDesc}</p>
                             <p>
-                              <button
-                                id="add_stop_btn"
-                                className="btn btn-outline-dark  px-3 py-2"
-                                style={{ marginTop: 0 }}
-                              >
-                                <i className="fa fa-map-marker mr-1"></i>Add
-                                Trip
-                              </button>
+                             <AddTrip />
                             </p>
                             </div>
                             <div className="map">  
@@ -357,7 +351,6 @@ export const Agnecies = () => {
           </Tabs>
         </div>
       </div>
-
       <Modal
         show={show}
         onHide={handleClose}

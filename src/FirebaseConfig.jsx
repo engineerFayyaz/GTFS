@@ -1,8 +1,7 @@
 // firebase.js
 import { initializeApp } from 'firebase/app';
-import { getAnalytics } from 'firebase/analytics';
 import { getFirestore } from 'firebase/firestore';
-
+import {getAuth} from "firebase/auth";
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBvqUHysbjYNn3nAg8pNhD8eA0LmbSOlX0",
@@ -17,8 +16,6 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 const db = getFirestore(app); // Initialize Firestore and assign it to db
-
-
-export { app, analytics, db };
+const auth = getAuth();
+export { app,db,auth };
