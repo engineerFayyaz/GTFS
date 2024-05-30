@@ -31,7 +31,7 @@ import { OptionalData } from "../../Components/Agencies/OptionalData";
 import OnlyMap from "../../Components/OnlyMap";
 import { Warnings } from "../../Components/Agencies/Warnings";
 import FirestoreDataDownloader from "../../Components/FirestoreDataDownloader";
-import { AddTrip } from "./components/AddTrip";
+import useExportGTFS from "../../Components/ExportGTFS";
 
 export const Agnecies = () => {
   const { id } = useParams(); // Get the id parameter from the URL
@@ -42,6 +42,7 @@ export const Agnecies = () => {
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState("");
   const db = getFirestore();
+  const { handleExport } = useExportGTFS();
   const [formData, setFormData] = useState({
     routeTypeCat: "",
     routeType: "",
@@ -209,7 +210,7 @@ export const Agnecies = () => {
             </div>
           </div>
           <div className="col-sm-4 float-end text-end">
-            <a href="#" className="btn btn-outline-dark rounded-2 px-2 py-2">
+            <a href="#" className="btn btn-outline-dark rounded-2 px-2 py-2" onClick={handleExport}>
               <i className="fa fa-download">&nbsp;</i>Export GTFS
             </a>
             <a
