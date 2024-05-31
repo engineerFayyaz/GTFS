@@ -24,6 +24,7 @@ import Loader from "../../../Components/Loader";
 
 export const AddTrip = () => {
   const [show, setShow] = useState(false);
+  const [showAddRouteMap, setShowAddRouteMap] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState("");
   const [loading, setLoading] = useState(false);
@@ -40,6 +41,9 @@ export const AddTrip = () => {
     wheelchair: "",
     addStop: "",
     routeMap: "",
+  });
+  const [newRouteMapData, setNewRouteMapData] = useState({
+    routeName: "",
   });
 
   const db = getFirestore();
@@ -89,6 +93,14 @@ export const AddTrip = () => {
     });
   };
 
+  const handleNewRouteMapInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewRouteMapData({
+      ...newRouteMapData,
+      [name]: value,
+    });
+  };
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -115,13 +127,42 @@ export const AddTrip = () => {
     }
   };
 
+  const handleAddRouteMapSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const docRef = await addDoc(collection(db, "agencies_routes_data"), newRouteMapData);
+      setTimeout(() => {
+        toast.success("Route Map added successfully");
+      }, 1000);
+
+      // Update route maps list
+      const routeMapsSnapshot = await getDocs(collection(db, "agencies_routes_data"));
+      setRouteMaps(routeMapsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+      handleCloseAddRouteMap();
+    } catch (error) {
+      console.error("Error adding route map: ", error);
+      alert("Failed to add route map");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCloseAddRouteMap = () => {
+    setShowAddRouteMap(false);
+    setNewRouteMapData({ routeName: "" });
+  };
+
+  const handleShowAddRouteMap = () => setShowAddRouteMap(true);
+
   if (loading) {
     return <Loader />;
   }
 
   return (
     <>
-    <ToastContainer />
+      <ToastContainer />
       <button
         id="add_stop_btn"
         className="btn btn-outline-dark  px-3 py-2"
@@ -144,7 +185,7 @@ export const AddTrip = () => {
           <Modal.Title>
             <b>
               {" "}
-              <h3>Create Company</h3>
+              <h3>Create Trip</h3>
             </b>
           </Modal.Title>
         </Modal.Header>
@@ -182,21 +223,6 @@ export const AddTrip = () => {
                     <span className="cont_arrow" />
                   </div>
                 </div>
-                {/* <div className="form-group col-sm-3" style={{ display: "none" }}>
-          <label htmlFor="trip_id">
-            Trip Id <span className="requ-lft">Required</span>
-          </label>
-          <input
-            type="text"
-            placeholder=""
-            name="trip_id"
-            id="trip_id"
-            className="form-control"
-            defaultValue={2}
-            onChange={handleInputChange}
-            // value={formData.trip}
-          />
-        </div> */}
               </div>
               <div className="row">
                 <div className="form-group col-sm-6">
@@ -270,26 +296,24 @@ export const AddTrip = () => {
                   </div>
                 </div>
                 <div className="form-group col-sm-6">
-                  <label htmlFor="add_add_block_id">Block</label>
-                  <div className="custom_search_parent full_width_select">
-                    <select
-                      className="custom_search tempclass"
-                      id="block"
-                      name="block"
-                      onChange={handleInputChange}
-                      value={formData.block}
-                    >
-                      <option value="" disabled="disabled" selected="selected">
-                        No blocks created yet
-                      </option>
-                    </select>
-                    <span className="cont_arrow" />
-                  </div>
+                  <label htmlFor="block_id">Block</label>
+                  <input
+                    type="text"
+                    name="block"
+                    id="block"
+                    className="form-control"
+                    placeholder="Block"
+                    style={{ textAlign: "left" }}
+                    onChange={handleInputChange}
+                    value={formData.block}
+                  />
                 </div>
               </div>
               <div className="row">
                 <div className="form-group col-sm-6">
-                  <label htmlFor="trip_bike">Bikes Allowed</label>
+                  <label htmlFor="trip_bikes_allowed">
+                    Bikes Allowed <span className="requ-lft">Required</span>
+                  </label>
                   <div className="custom_search_parent full_width_select">
                     <select
                       className="custom_search"
@@ -302,7 +326,8 @@ export const AddTrip = () => {
                         No bike information for the trip
                       </option>
                       <option value={1}>
-                        Vehicle can accommodate at least one bicycle
+                        Vehicle being used on this particular trip can
+                        accommodate at least one bicycle
                       </option>
                       <option value={2}>
                         No bicycles are allowed on this trip
@@ -312,7 +337,9 @@ export const AddTrip = () => {
                   </div>
                 </div>
                 <div className="form-group col-sm-6">
-                  <label htmlFor="trip_wheel">Wheelchair Accessible</label>
+                  <label htmlFor="trip_wheelchair">
+                    Wheelchair Accessible
+                  </label>
                   <div className="custom_search_parent full_width_select">
                     <select
                       className="custom_search"
@@ -325,181 +352,154 @@ export const AddTrip = () => {
                         No accessibility information for the trip
                       </option>
                       <option value={1}>
-                        Vehicle can accommodate at least one wheelchair rider
+                        Vehicle being used on this particular trip can
+                        accommodate at least one rider in a wheelchair
                       </option>
                       <option value={2}>
-                        No riders in wheelchairs can be accommodated
+                        No riders in wheelchairs can be accommodated on this
+                        trip
                       </option>
                     </select>
                     <span className="cont_arrow" />
                   </div>
                 </div>
               </div>
-              {/*<a style="padding:10px;" href="#" class="btn btn-default border-1"><i class="fa fa-plus">&nbsp;</i> Add Departure</a>*/}
-            </div>
-          </div>
-          <table className="table table-striped table-responsive table-hover table-bordered">
-            <thead>
-              <tr className="bg-head">
-                <th style={{ textAlign: "center" }}>
-                  <i className="fa fa-clock-o" aria-hidden="true" />
-                </th>
-                <th
-                  style={{ width: 220 }}
-                  title="Time zone used for all arrivals/departures"
-                >
-                  Asia/Karachi
-                </th>
-                <th
-                  colSpan={2}
-                  style={{ textAlign: "center" }}
-                  title="Use hours > 24 for stops occuring the next day (e.g. 25:12 = 01:12am Day+1)"
-                >
-                  24 Hour Format
-                  {/* input type="checkbox" id="edit_keepsame" name="edit_keepsame" style="width:auto" />&nbsp;&nbsp;<label for="edit_keepsame" style="width:auto">Keep Same</label !*/}
-                </th>
-                <th className="" rowSpan={2} style={{ textAlign: "center" }}>
-                  Stop Headsign
-                </th>
-                <th className="select_td" rowSpan={2}>
-                  Pickup
-                  <br />
-                  Type
-                </th>
-                <th className="select_td" rowSpan={2}>
-                  Drop off
-                  <br />
-                  Type
-                </th>
-                <th className="select_td" rowSpan={2}>
-                  Distance
-                  <br />
-                  Travelled
-                </th>
-                <th className="edit_remove" style={{ width: 30 }} rowSpan={2} />
-              </tr>
-              <tr className="bg-head">
-                <th style={{ textAlign: "center" }}>#</th>
-                <th>Stop Name</th>
-                <th className="edit_remove">Arrive</th>
-                <th className="edit_remove">Depart</th>
-              </tr>
-            </thead>
-            <tbody
-              id="trip_stop_table_id"
-              className="ui-sortable"
-              style={{}}
-            ></tbody>
-          </table>
-          <div className="row">
-            <div className="form-group col-sm-6">
-              <label htmlFor="add_add_stop_id">Add a Stop</label>
-              <select
-                className="form-control custom_search select2-hidden-accessible"
-                id="addStop"
-                name="addStop"
-                data-placeholder="Select One"
-                tabIndex={-1}
-                aria-hidden="true"
-                onChange={handleInputChange}
-                value={formData.addStop}
-              >
-<option value="">
-                select one
-              </option>
-              {stops.map(stop => (
+              <div className="row">
+                <div className="form-group col-sm-6">
+                  <label htmlFor="stop_id">Add Stops</label>
+                  <div className="custom_search_parent full_width_select">
+                    <select
+                      className="custom_search"
+                      name="addStop"
+                      id="addStop"
+                      onChange={handleInputChange}
+                      value={formData.addStop}
+                    >
+                      <option value="" disabled="disabled" selected="selected">
+                        Select One
+                      </option>
+                      {stops.map((stop) => (
                         <option key={stop.id} value={stop.id}>
                           {stop.stopName}
                         </option>
                       ))}
-              </select>
-              {/* div class="custom_search_parent full_width_select">
-					<select class="custom_search tempclass" id="add_add_stop_id" name="stop_id">
-						<option value="" disabled="disabled" selected="selected"></option>
-						 
-							<option value="" title="Lat/Lon: "></option>     
-											</select>
-					<span class="cont_arrow"></span></div !*/}
-            </div>
-            <div className="form-group col-sm-2">
-              <br />
-              <button
-                className="btn btn-default"
-                type="button"
-                onclick="add_stop_by_trip()"
-                style={{ verticalAlign: "bottom" }}
-              >
-                <i className="fa fa-plus"> </i>&nbsp; Add stop
-              </button>
-            </div>
-            <div className="form-group col-sm-4" style={{ width: "auto" }}>
-              {/* br/><span title="Sort 'Add a Stop'">Sort by:&nbsp;</span><input type="radio" name="stop_order" value="txt" title="Sort alpahabetically" checked="checked" onclick="stop_sort('n');" style="width:auto;"><span title="Sort alpahabetically">&nbsp;Name&nbsp;&nbsp;</span><input type="radio" name="stop_order" value="id" title="Oldest -> Newest" onclick="stop_sort('d');" style="width:auto;"><span title="Oldest -> Newest">&nbsp;Date&nbsp;&nbsp;</span */}
-            </div>
-          </div>
-          <div className="row">
-            <div className="form-group col-md-6">
-              <label htmlFor="shape_id">
-                Route Map
-                <a
-                  href="#"
-                  onclick="initialize_map_route('N');"
-                  data-target="#map_route"
-                  data-toggle="modal"
-                  data-backdrop="static"
-                >
-                  <i className="fa fa-crosshairs" title="Edit Route Map">
-                    &nbsp;&nbsp;
-                  </i>
-                </a>
-                &nbsp;&nbsp;
-                <a
-                  href="#"
-                  onclick="initialize_map_route('Y');"
-                  data-target="#map_route"
-                  data-toggle="modal"
-                  data-backdrop="static"
-                >
-                  Create New Route Map
-                </a>
-              </label>
-              <div className="custom_search_parent full_width_select">
-                <select
-                  className="custom_search temp_class"
-                  id="shape_id"
-                  name="shape_id"
-                >
-                  <option value="" disabled="disabled" selected="selected">
-                    Select One
-                  </option>
-                  {routeMaps.map(routeMap => (
-                        <option key={routeMap.id} value={routeMap.id}>
-                          {routeMap.name}
+                    </select>
+                    <span className="cont_arrow" />
+                  </div>
+                </div>
+                <div className="form-group col-sm-6">
+                  <label htmlFor="trip_route">Route Maps</label>
+                  <div className="custom_search_parent full_width_select">
+                    <select
+                      className="custom_search"
+                      name="routeMap"
+                      id="routeMap"
+                      onChange={handleInputChange}
+                      value={formData.routeMap}
+                    >
+                      <option value="" disabled="disabled" selected="selected">
+                        Select One
+                      </option>
+                      {routeMaps.map((route) => (
+                        <option key={route.id} value={route.id}>
+                          {route.routeName}
                         </option>
                       ))}
-                </select>
-                <span className="cont_arrow" />
+                    </select>
+                    <span className="cont_arrow" />
+                    <Button onClick={handleShowAddRouteMap} variant="link">
+                      Add Route Map
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              <div className="form-group mb-0">
+                <div className="row align-items-center">
+                  <div className="col-sm-6 col-6">
+                    <Button
+                      variant="secondary"
+                      onClick={handleClose}
+                      className="mt-3"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                  <div className="col-sm-6 col-6 text-right">
+                    <Button
+                      type="submit"
+                      className="btn btn-danger btn-block-sm mt-3"
+                    >
+                      {editMode ? "Update" : "Save"}
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          <div className="modal-footer">
-            <button
-              type="button"
-              className="btn btn-default"
-              data-dismiss="modal"
-            >
-              Cancel
-            </button>
-            <button
-              className="btn btn-success add-trip"
-              type="button"
-              value="Submit"
-            >
-              Submit
-            </button>
-            {/* input type="button" class="btn btn-success add-trip" value="Submit" !*/}
+        </form>
+      </Modal>
+
+      <Modal
+        show={showAddRouteMap}
+        onHide={handleCloseAddRouteMap}
+        centered
+        backdrop="static"
+        size="md"
+        className="add_route_map_modal"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <b>
+              {" "}
+              <h3>Add Route Map</h3>
+            </b>
+          </Modal.Title>
+        </Modal.Header>
+        <form
+          method="post"
+          name="add_route_map_form"
+          id="add_route_map_form"
+          className="p-4"
+          onSubmit={handleAddRouteMapSubmit}
+        >
+          <div className="form-group">
+            <label htmlFor="routeName">Route Name</label>
+            <input
+              type="text"
+              name="routeName"
+              id="routeName"
+              className="form-control"
+              style={{ textAlign: "left" }}
+              placeholder="Enter Route Name"
+              onChange={handleNewRouteMapInputChange}
+              value={newRouteMapData.routeName}
+            />
+          </div>
+          <div className="form-group mb-0">
+            <div className="row align-items-center">
+              <div className="col-sm-6 col-6">
+                <Button
+                  variant="secondary"
+                  onClick={handleCloseAddRouteMap}
+                  className="mt-3"
+                >
+                  Cancel
+                </Button>
+              </div>
+              <div className="col-sm-6 col-6 text-right">
+                <Button
+                  type="submit"
+                  className="btn btn-danger btn-block-sm mt-3"
+                >
+                  Save
+                </Button>
+              </div>
+            </div>
           </div>
         </form>
       </Modal>
     </>
   );
 };
+
+export default AddTrip;
