@@ -8,6 +8,7 @@ import {
   doc,
   deleteDoc,
   Timestamp,
+  query, where, serverTimestamp
 } from "firebase/firestore"; // Import the Firestore database
 import {
   getAuth,
@@ -22,130 +23,13 @@ import useImportGTFS from "../../Components/useImportGTFS";
 import Select from 'react-select';
 import countryList from 'react-select-country-list'
 import moment from 'moment-timezone';
-import {db} from "../../FirebaseConfig"
-
 
 export const AddTransit = () => {
   const [show, setShow] = useState(false);
   const [companyInfo, setCompanyInfo] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedCompanies, setSelectedCompanies] = useState([]);
-  const [user, setUser] = useState(null); // State to hold user information
   const [currentUser, setCurrentUser] = useState(null);
-  const [companies, setCompanies] = useState([]);
-
-
-  const handleShow = () => setShow(true);
-  const isUserLoggedInAndVerified = user && user.emailVerified;
-  const db = getFirestore();
-  const auth = getAuth(); // Get auth instance
-  const [selectedFile, setSelectedFile] = useState(null);
-  const { handleImport } = useImportGTFS();
-  const options = countryList().getData();
-
-  const [timezones, setTimezones] = useState([]);
-  const [selectedTimezone, setSelectedTimezone] = useState(null);
-
-  useEffect(() => {
-    const tz = moment.tz.names().map(tz => ({ value: tz, label: tz }));
-    setTimezones(tz);
-  }, []);
-
-  const handleInputChange = (input) => {
-    if (input && input.target) {
-      // Handle regular form input change
-      const { name, value } = input.target;
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
-    } else {
-      // Handle react-select change
-      setFormData({ ...formData, timezone: input.value });
-    }
-  };
-
-
-  const handleChange = (selectedOption) => {
-    setSelectedTimezone(selectedOption);
-    setFormData({ ...formData, timezone: selectedOption.value });
-  };
-
-
-
-  const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (selectedFile) {
-      console.log("Selected file:", selectedFile);
-      handleImport(selectedFile);
-    } else {
-      alert('Please select a file to import.');
-    }
-  };
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(user => {
-      if (user) {
-        // User is signed in.
-        setCurrentUser(user);
-        // Fetch companies associated with the current user
-        fetchCompanies(user.uid);
-      } else {
-        // No user is signed in.
-        setCurrentUser(null);
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-
-
-const fetchCompanies = async (userId) => {
-    try {
-      const companiesRef = db.collection('companies');
-      const snapshot = await companiesRef.where('userId', '==', userId).get();
-      const companyList = [];
-      snapshot.forEach(doc => {
-        companyList.push({ id: doc.id, ...doc.data() });
-      });
-      setCompanies(companyList);
-    } catch (error) {
-      console.error('Error fetching companies:', error);
-    }
-  };
-
-
-  useEffect(() => {
-    // Fetch company data only if user is logged in and email is verified
-    if (user && user.emailVerified) {
-      const fetchRoutes = async () => {
-        try {
-          setLoading(true);
-          const querySnapshot = await getDocs(collection(db, "created_agencies"));
-          const routesData = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          setCompanyInfo(routesData);
-        } catch (error) {
-          toast.error("Error fetching agencies: ", error);
-          console.log("Error fetching agencies: ", error.code, error.message);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchRoutes();
-    }
-  }, [db, user]);
-
-
   const [formData, setFormData] = useState({
     companyName: "",
     country: "",
@@ -161,6 +45,51 @@ const fetchCompanies = async (userId) => {
     distanceUnit: "",
   });
 
+  const db = getFirestore();
+  const auth = getAuth();
+  const options = countryList().getData();
+  const [selectedFile, setSelectedFile] = useState(null);
+  const { handleImport } = useImportGTFS();
+  const [timezones, setTimezones] = useState([]);
+  const [selectedTimezone, setSelectedTimezone] = useState(null);
+
+  useEffect(() => {
+    const tz = moment.tz.names().map(tz => ({ value: tz, label: tz }));
+    setTimezones(tz);
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, user => {
+      if (user) {
+        setCurrentUser(user);
+        fetchCompanies(user.uid);
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [auth]);
+
+  const fetchCompanies = async (userId) => {
+    try {
+      const companiesRef = collection(db, 'created_agencies');
+      const q = query(companiesRef, where('userId', '==', userId));
+      const snapshot = await getDocs(q);
+      const companyList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setCompanyInfo(companyList);
+    } catch (error) {
+      console.error('Error fetching companies:', error);
+      toast.error('Error fetching companies');
+    }
+  };
+
+  const handleShow = () => setShow(true);
   const handleClose = () => {
     setShow(false);
     setFormData({
@@ -179,55 +108,71 @@ const fetchCompanies = async (userId) => {
     });
   };
 
-  // fetching company data
-  useEffect(() => {
-    const fetchRoutes = async () => {
-      try {
-        setLoading(true);
-        const querySnapshot = await getDocs(collection(db, "created_agencies"));
-        const routesData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          // createdAt: doc.data().createdAt?.toDate(), // Convert Firestore timestamp to Date object
-          ...doc.data(),
-        }));
-        setCompanyInfo(routesData);
-      } catch (error) {
-        toast.error("Error fetching agencies: ", error);
-        console.log("Error fetching agencies: ", error.code, error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const handleInputChange = (input) => {
+    if (input && input.target) {
+      const { name, value } = input.target;
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    } else {
+      setFormData({ ...formData, timezone: input.value });
+    }
+  };
 
-    fetchRoutes();
-  }, [db]);
+  const handleFileChange = (event) => {
+    setSelectedFile(event.target.files[0]);
+  };
 
+  const handleChange = (selectedOption) => {
+    setSelectedTimezone(selectedOption);
+    setFormData({ ...formData, timezone: selectedOption.value });
+  };
 
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (selectedFile) {
+      console.log("Selected file:", selectedFile);
+      handleImport(selectedFile);
+    } else {
+      alert('Please select a file to import.');
+    }
+  };
 
-
-  // handle form submit
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
-      // Check if user is logged in and email is verified before adding transit
       if (!currentUser || !currentUser.emailVerified) {
-        // Prompt user to login and verify email
         toast.error("Please login and verify your email.");
         return;
       }
-      const createdAt = db.FieldValue.serverTimestamp();
+
+      const companiesRef = collection(db, 'created_agencies');
+      const q = query(companiesRef, where('companyName', '==', formData.companyName));
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        setFormData({
+          companyName: "",
+        });
+        setTimeout(() => {
+          toast.error("Company with this name already exists.");
+        
+        },1000)
+        console.log("Company with this name already exists", snapshot);
+        return;
+      }
+
+      const createdAt = serverTimestamp();
       const docData = {
         ...formData,
         createdAt: createdAt,
-        userId: currentUser.uid, // Add user ID to the document data
+        userId: currentUser.uid,
       };
-      const companyRef = db.collection('companies');
-      await companyRef.add(docData);
+      await addDoc(companiesRef, docData);
       toast.success("Company added successfully");
-      // handleCloseModal();
-      // Refresh the list of companies associated with the current user
       fetchCompanies(currentUser.uid);
+      handleClose();
     } catch (error) {
       toast.error("Failed to add company");
       console.error("Failed to add company", error);
@@ -235,9 +180,7 @@ const fetchCompanies = async (userId) => {
       setLoading(false);
     }
   };
-  
 
-  // handle checkbox change
   const handleCheckboxChange = (id) => {
     setSelectedCompanies((prevSelected) =>
       prevSelected.includes(id)
@@ -246,7 +189,6 @@ const fetchCompanies = async (userId) => {
     );
   };
 
-  // handle delete
   const handleDeleteSelected = async () => {
     if (window.confirm("Are you sure you want to delete selected companies?")) {
       try {
@@ -256,11 +198,9 @@ const fetchCompanies = async (userId) => {
         );
         setCompanyInfo(companyInfo.filter((company) => !selectedCompanies.includes(company.id)));
         setSelectedCompanies([]);
-        setTimeout(() => {
-          toast.success("Selected companies deleted successfully");
-        }, 1000)
+        toast.success("Selected companies deleted successfully");
       } catch (error) {
-        console.error("Error deleting companies: ", error);
+        console.error("Error deleting companies:", error);
         toast.error("Failed to delete companies");
       } finally {
         setLoading(false);
@@ -269,10 +209,9 @@ const fetchCompanies = async (userId) => {
   };
 
   if (loading) {
-    return <Loader />
+    return <Loader />;
   }
 
-  const handleCreate = () => { };
   return (
     <>
       <ToastContainer />
@@ -283,10 +222,7 @@ const fetchCompanies = async (userId) => {
             Transit Companies
           </h1>
           <div className="col-sm-6 float-end ">
-            <Link
-              className="btn btn-default border-0 "
-              onClick={handleDeleteSelected}
-            >
+            <Link className="btn btn-default border-0 " onClick={handleDeleteSelected}>
               <i className="fa fa-trash">&nbsp;</i>
               Delete
             </Link>
@@ -301,16 +237,9 @@ const fetchCompanies = async (userId) => {
                 </Button>
               </Form>
             </Container>
-            <a
-              href="#"
-              className="btn btn-default border-0 "
-              id="view_export_btn"
-            >
+            <a href="#" className="btn btn-default border-0 " id="view_export_btn">
               <i className="fa fa-file-text">&nbsp;</i>View Exports
             </a>
-            {/*<p class="select_all" >									
-						Select all &nbsp;<input type="checkbox" id="select_alls">
-					</p> */}
           </div>
         </header>
         <ul className="grid container-fluid p-0 cs-style-1">
@@ -333,14 +262,10 @@ const fetchCompanies = async (userId) => {
                 </figcaption>
               </figure>
             </div>
-            {companyInfo.map((company, index) => (
+            {companyInfo.map((company) => (
               <div className="col-md-3 col-sm-6 col-xs-12" id={`del_${company.id}`} key={company.id}>
                 <figure>
-                  <div
-                    className="box_bg w-100"
-                    style={{ cursor: "pointer" }}
-                    title="Click to manage routes, schedules and trips"
-                  >
+                  <div className="box_bg w-100" style={{ cursor: "pointer" }} title="Click to manage routes, schedules and trips">
                     <p style={{ float: "right" }}>
                       <input
                         type="checkbox"
