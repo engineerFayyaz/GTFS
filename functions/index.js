@@ -102,7 +102,7 @@ const sendActivationEmail = async (userId) => {
 
     // Send mail with defined transport object
     const mailOptions = {
-      from: 'your_email@gmail.com', // Sender address
+      from: 'mail@busmate.com', // Sender address
       to: userEmail, // List of recipients
       subject: 'Activate Your Account', // Subject line
       text: 'Please activate your account.', // Plain text body
