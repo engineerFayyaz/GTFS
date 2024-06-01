@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Modal } from "react-bootstrap";
-import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
+import {getAuth, onAuthStateChanged} from "firebase/auth";
 import { toast } from 'react-toastify';
 import {Tooltip} from 'react-tooltip';
+import Loader from "../Loader";
 
 export const AddServices = () => {
   const [show, setShow] = useState(false);
@@ -24,8 +26,11 @@ export const AddServices = () => {
     exceptions: [],
   });
   const [editingServiceId, setEditingServiceId] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const db = getFirestore();
+  const auth = getAuth();
 
   const handleShow = () => setShow(true);
   const handleClose = () => {
@@ -92,25 +97,35 @@ export const AddServices = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      if (!currentUser) {
+        toast.error("Please login to add/update services.");
+        return;
+      }
+
+      const serviceData = {
+        ...formData,
+        userId: currentUser.uid,
+      };
+
       if (editingServiceId) {
-        // Update existing service
-        await updateDoc(doc(db, "Agencies_services_data", editingServiceId), formData);
+        await updateDoc(doc(db, "Agencies_services_data", editingServiceId), serviceData);
         toast.success("Service updated successfully");
       } else {
-        // Add new service
-        await addDoc(collection(db, "Agencies_services_data"), formData);
+        await addDoc(collection(db, "Agencies_services_data"), serviceData);
         toast.success("Service added successfully");
       }
       handleClose();
-      fetchServices();
+      fetchServices(currentUser.uid);
     } catch (error) {
       toast.error("Error saving service data: " + error.message);
     }
   };
 
-  const fetchServices = async () => {
+  const fetchServices = async (userId) => {
     try {
-      const querySnapshot = await getDocs(collection(db, "Agencies_services_data"));
+      setLoading(true);
+      const q = query(collection(db, "Agencies_services_data"), where("userId", "==", userId));
+      const querySnapshot = await getDocs(q);
       const servicesData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -118,6 +133,8 @@ export const AddServices = () => {
       setServices(servicesData);
     } catch (error) {
       toast.error("Error fetching services: " + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -140,35 +157,48 @@ export const AddServices = () => {
   };
 
   useEffect(() => {
-    fetchServices();
-  }, []);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUser(user);
+        fetchServices(user.uid);
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [auth]);
 
   // Helper function to check if a service is available on a specific date
   const isServiceAvailable = (service, day) => {
     const dayMap = {
-      monday: 'Mon',
-      tuesday: 'Tue',
-      wednesday: 'Wed',
-      thursday: 'Thu',
-      friday: 'Fri',
-      saturday: 'Sat',
-      sunday: 'Sun'
+      monday: "Mon",
+      tuesday: "Tue",
+      wednesday: "Wed",
+      thursday: "Thu",
+      friday: "Fri",
+      saturday: "Sat",
+      sunday: "Sun",
     };
     const exceptions = service.exceptions || [];
     const dayName = dayMap[day];
 
-    const exception = exceptions.find(exception => {
+    const exception = exceptions.find((exception) => {
       const exceptionDate = new Date(exception.date);
-      const serviceDate = new Date(formData.startDate);
-      serviceDate.setDate(serviceDate.getDate() + dayMap[day.toLowerCase()]);
+      const serviceDate = new Date(service.startDate);
+      serviceDate.setDate(serviceDate.getDate() + (dayName.toLowerCase() === day.toLowerCase()));
       return exceptionDate.getTime() === serviceDate.getTime();
     });
 
     if (exception) {
-      return exception.availability === '1';
+      return exception.availability === "1";
     }
     return service.days[day];
   };
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <>
@@ -272,7 +302,14 @@ export const AddServices = () => {
                 </tr>
               </thead>
               <tbody id="calendar_tbody">
-                {services.map((service) => (
+              {services.length === 0 ? (
+                  <tr className="error">
+                    <td colSpan={15} className="text-center">
+                      no data available
+                    </td>
+                  </tr>
+              ) : (
+                services.map((service) => (
                   <tr key={service.id}>
                     <td style={{ borderRight: "none !important" }}></td>
                     <td>{service.serviceName}</td>
@@ -308,7 +345,8 @@ export const AddServices = () => {
                       onClick={() => handleDelete(service.id)}></i>
                     </td>
                   </tr>
-                ))}
+                ))
+              )}
               </tbody>
             </table>
           </div>

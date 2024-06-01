@@ -7,10 +7,11 @@ import {
   getDocs,
   doc,
   deleteDoc,
-  Timestamp,
+  query,
+  where,
   updateDoc,
 } from "firebase/firestore"; // Import the Firestore database
-
+import {getAuth, onAuthStateChanged} from "firebase/auth";
 import { Modal } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import Loader from "../Loader";
@@ -18,10 +19,12 @@ import OnlyMap from "../OnlyMap";
 
 export const AddStops = () => {
   const db = getFirestore();
+  const auth = getAuth();
   const [show, setShow] = useState(false);
   const [stopsInfo, setStopsInfo] = useState([]);
   const [loading, setLoading] = useState(false);
   const [stops, setStops] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [editingStopId, setEditingStopId] = useState(null);
   const [formData, setFormData] = useState({
     stopName: "",
@@ -43,6 +46,61 @@ export const AddStops = () => {
   const firstMatchRef = useRef(null);
   //   for modal
   const handleShow = () => setShow(true);
+  const handleClose = () => {
+    setShow(false);
+    setEditingStopId(null);
+    setFormData({
+      stopName: "",
+      lat: "",
+      long: "",
+      stopCode: "",
+      type: "",
+      desc: "",
+      stopUrl: "",
+      fareZone: "",
+      parentStation: "",
+      timeZone: "",
+      boarding: "",
+    });
+  };
+
+  
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUser(user);
+        fetchStops(user.uid);
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [auth]);
+
+  const fetchStops = async (userId) => {
+    try {
+      setLoading(true);
+
+      const docRef = collection(db, "Agencies_stops_data");
+      const q = query(docRef, where("userId", "==", userId));
+      const querySnapshot = await getDocs(q);
+      const stopsData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setStopsInfo(stopsData);
+      setFilteredStops(stopsData);
+      console.log("data is:", stopsData);
+    } catch (error) {
+      toast.error("Error fetching stops: " + error.message);
+      console.log("Error fetching stops: ", error.code, error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -57,22 +115,30 @@ export const AddStops = () => {
     e.preventDefault();
     try {
       setLoading(true);
+
+      if (!currentUser) {
+        toast.error("Please login to add/update stops.");
+        return;
+      }
+
+      const stopsData = {
+        ...formData,
+        userId: currentUser.uid,
+      };
+
       if (editingStopId) {
-        await updateDoc(
-          doc(db, "Agencies_stops_data", editingStopId),
-          formData
-        );
+        await updateDoc(doc(db, "Agencies_stops_data", editingStopId), stopsData);
         setTimeout(() => {
           toast.success("Stop updated successfully");
         }, 1000);
       } else {
-        await addDoc(collection(db, "Agencies_stops_data"), formData);
+        await addDoc(collection(db, "Agencies_stops_data"), stopsData);
         setTimeout(() => {
           toast.success("Stop added successfully");
         }, 1000);
       }
       handleClose();
-      fetchStops();
+      fetchStops(currentUser.uid);
     } catch (error) {
       toast.error("Error saving stop data: " + error.message);
     } finally {
@@ -98,62 +164,19 @@ export const AddStops = () => {
     setShow(true);
   };
 
-  const handleClose = () => {
-    setShow(false);
-    setEditingStopId(null);
-    setFormData({
-      stopName: "",
-      lat: "",
-      long: "",
-      stopCode: "",
-      type: "",
-      desc: "",
-      stopUrl: "",
-      fareZone: "",
-      parentStation: "",
-      timeZone: "",
-      boarding: "",
-    });
-  };
-
   const handleDelete = async (stopId) => {
     if (window.confirm("Are you sure you want to delete this stop?")) {
       try {
         await deleteDoc(doc(db, "Agencies_stops_data", stopId));
         setStops(stops.filter((stop) => stop.id !== stopId));
         toast.success("Stop deleted successfully");
-        fetchStops();
+        fetchStops(currentUser.uid);
       } catch (error) {
         console.error("Error deleting stop: ", error);
         toast.error("Failed to delete stop");
       }
     }
   };
-
-  const fetchStops = async () => {
-    try {
-      setLoading(true);
-      const querySnapshot = await getDocs(
-        collection(db, "Agencies_stops_data")
-      );
-      const stopsData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setStopsInfo(stopsData);
-      setFilteredStops(stopsData);
-      console.log("data is:", stopsData);
-    } catch (error) {
-      toast.error("Error fetching stops: " + error.message);
-      console.log("Error fetching stops: ", error.code, error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchStops();
-  }, [db, editingStopId, show]);
 
   useEffect(() => {
     const results = stopsInfo.filter((stop) =>

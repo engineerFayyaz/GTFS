@@ -147,7 +147,6 @@ export const AddTransit = () => {
         toast.error("Please login and verify your email.");
         return;
       }
-
       const companiesRef = collection(db, 'created_agencies');
       const q = query(companiesRef, where('companyName', '==', formData.companyName));
       const snapshot = await getDocs(q);

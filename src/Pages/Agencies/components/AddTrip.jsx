@@ -18,8 +18,11 @@ import {
   doc,
   deleteDoc,
   updateDoc,
+  query,
+  where,
   getDoc,
 } from "firebase/firestore"; // Import the Firestore database
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import Loader from "../../../Components/Loader";
 
 export const AddTrip = () => {
@@ -31,6 +34,7 @@ export const AddTrip = () => {
   const [services, setServices] = useState([]);
   const [stops, setStops] = useState([]);
   const [routeMaps, setRouteMaps] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [formData, setFormData] = useState({
     service: "",
     tripHeadsign: "",
@@ -47,27 +51,43 @@ export const AddTrip = () => {
   });
 
   const db = getFirestore();
+  const auth = getAuth();
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const servicesSnapshot = await getDocs(collection(db, "Agencies_services_data"));
-        const stopsSnapshot = await getDocs(collection(db, "Agencies_stops_data"));
-        const routeMapsSnapshot = await getDocs(collection(db, "agencies_routes_data"));
-
-        setServices(servicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        setStops(stopsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        setRouteMaps(routeMapsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      } catch (error) {
-        console.error("Error fetching data: ", error);
-      } finally {
-        setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUser(user);
+        fetchData(user.uid);
+      } else {
+        setCurrentUser(null);
       }
-    };
+    });
 
-    fetchData();
-  }, [db]);
+    return () => unsubscribe();
+  }, [auth]);
+
+  const fetchData = async (userId) => {
+    setLoading(true);
+    try {
+      const servicesSnapshot = await getDocs(
+        query(collection(db, "Agencies_services_data"), where("userId", "==", userId))
+      );
+      const stopsSnapshot = await getDocs(
+        query(collection(db, "Agencies_stops_data"), where("userId", "==", userId))
+      );
+      const routeMapsSnapshot = await getDocs(
+        query(collection(db, "agencies_routes_data"), where("userId", "==", userId))
+      );
+
+      setServices(servicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setStops(stopsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setRouteMaps(routeMapsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleClose = () => {
     setShow(false);
@@ -103,25 +123,40 @@ export const AddTrip = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (!currentUser) {
+      toast.error("Please log in to add/update trips.");
+      return;
+    }
     setLoading(true);
     try {
+      // Fetch the service name based on the selected service ID
+      const serviceDoc = await getDoc(doc(db, "Agencies_services_data", formData.service));
+      const serviceName = serviceDoc.exists() ? serviceDoc.data().serviceName : "";
+
+      // Fetch the stop name based on the selected stop ID
+      const stopDoc = await getDoc(doc(db, "Agencies_stops_data", formData.addStop));
+      const stopName = stopDoc.exists() ? stopDoc.data().stopName : "";
+
+      const tripData = {
+        ...formData,
+        serviceName,
+        stopName,
+        userId: currentUser.uid,
+      };
+
       if (editMode) {
-        // Update existing route
-        await updateDoc(doc(db, "agencies_trips_data", editId), formData);
-        setTimeout(() => {
-          toast.success("Data updated successfully");
-        }, 1000);
+        // Update existing trip
+        await updateDoc(doc(db, "agencies_trips_data", editId), tripData);
+        toast.success("Data updated successfully");
       } else {
-        // Add new route
-        const docRef = await addDoc(collection(db, "agencies_trips_data"), formData);
-        setTimeout(() => {
-          toast.success("Trips uploaded successfully");
-        }, 1000);
+        // Add new trip
+        await addDoc(collection(db, "agencies_trips_data"), tripData);
+        toast.success("Trips uploaded successfully");
       }
       handleClose();
     } catch (error) {
-      console.error("Error adding/updating route: ", error);
-      alert("Failed to add/update route");
+      console.error("Error adding/updating trip: ", error);
+      toast.error("Failed to add/update trip");
     } finally {
       setLoading(false);
     }
@@ -129,21 +164,30 @@ export const AddTrip = () => {
 
   const handleAddRouteMapSubmit = async (e) => {
     e.preventDefault();
+    if (!currentUser) {
+      toast.error("Please log in to add route maps.");
+      return;
+    }
     setLoading(true);
     try {
-      const docRef = await addDoc(collection(db, "agencies_routes_data"), newRouteMapData);
-      setTimeout(() => {
-        toast.success("Route Map added successfully");
-      }, 1000);
+      const routeMapData = {
+        ...newRouteMapData,
+        userId: currentUser.uid,
+      };
+
+      await addDoc(collection(db, "agencies_routes_data"), routeMapData);
+      toast.success("Route Map added successfully");
 
       // Update route maps list
-      const routeMapsSnapshot = await getDocs(collection(db, "agencies_routes_data"));
+      const routeMapsSnapshot = await getDocs(
+        query(collection(db, "agencies_routes_data"), where("userId", "==", currentUser.uid))
+      );
       setRouteMaps(routeMapsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
 
       handleCloseAddRouteMap();
     } catch (error) {
       console.error("Error adding route map: ", error);
-      alert("Failed to add route map");
+      toast.error("Failed to add route map");
     } finally {
       setLoading(false);
     }

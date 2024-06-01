@@ -19,7 +19,11 @@ import {
   deleteDoc,
   updateDoc,
   getDoc,
+  query,
+  where,
 } from "firebase/firestore"; // Import the Firestore database
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+
 // import Header from "../../Components/Header";
 import "./agencies.css";
 import { Link, useParams } from "react-router-dom";
@@ -42,7 +46,9 @@ export const Agnecies = () => {
   const [routes, setRoutes] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
   const db = getFirestore();
+  const auth = getAuth();
   const { handleExport } = useExportGTFS();
   const [formData, setFormData] = useState({
     routeTypeCat: "",
@@ -94,25 +100,40 @@ export const Agnecies = () => {
     fetchBlog();
   }, [id]);
 
-  // fetching data
   useEffect(() => {
-    const fetchRoutes = async () => {
-      try {
-        const querySnapshot = await getDocs(
-          collection(db, "agencies_routes_data")
-        );
-        const routesData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setRoutes(routesData);
-      } catch (error) {
-        toast.error("Error fetching routes: ", error);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUser(user);
+        fetchRoutes(user.uid);
+      } else {
+        setCurrentUser(null);
       }
-    };
+    });
 
-    fetchRoutes();
-  }, [db]);
+    return () => {
+      unsubscribe();
+    };
+  }, [auth]);
+
+  // fetching data
+  const fetchRoutes = async (userId) => {
+    try {
+      const RoutesRef = collection(db, "agencies_routes_data");
+      const q = query(RoutesRef, where("userId", "==", userId));
+      const snapshot = await getDocs(q);
+      const routesData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      // setCompanyInfo(companyList);
+      setRoutes(routesData);
+
+      console.log("Routes created by users are ", routesData);
+    } catch (error) {
+      console.error("Error fetching routes:", error);
+      toast.error("Error fetching routes: ", error);
+    }
+  };
 
   if (loading) {
     return <Loader />;
@@ -130,22 +151,33 @@ export const Agnecies = () => {
     e.preventDefault();
     try {
       setLoading(true);
+      if (!currentUser) {
+        toast.error("Please login to add/update routes.");
+        return;
+      }
+
+      const routeData = {
+        ...formData,
+        userId: currentUser.uid, // Include the userId
+      };
+
       if (editMode) {
         // Update existing route
-        await updateDoc(doc(db, "agencies_routes_data", editId), formData);
+        await updateDoc(doc(db, "agencies_routes_data", editId), routeData);
         setTimeout(() => {
-          toast.success("Data updated successfully");
+          toast.success("Route updated successfully");
         }, 1000);
       } else {
         // Add new route
         const docRef = await addDoc(
           collection(db, "agencies_routes_data"),
-          formData
+          routeData
         );
         setTimeout(() => {
-          toast.success("Data uploaded successfully");
+          toast.success("Route added successfully");
         }, 1000);
       }
+      fetchRoutes(currentUser.uid); // Refresh the routes list
       handleClose();
     } catch (error) {
       console.error("Error adding/updating route: ", error);
@@ -211,7 +243,11 @@ export const Agnecies = () => {
             </div>
           </div>
           <div className="col-sm-4 float-end text-end">
-            <a href="#" className="btn btn-outline-dark rounded-2 px-2 py-2" onClick={handleExport}>
+            <a
+              href="#"
+              className="btn btn-outline-dark rounded-2 px-2 py-2"
+              onClick={handleExport}
+            >
               <i className="fa fa-download">&nbsp;</i>Export GTFS
             </a>
             <a
@@ -263,74 +299,81 @@ export const Agnecies = () => {
                   </a>
                 </div>
               </div>
-              {routes.map((route, index) => (
-                <div
-                  className="row my-4"
-                  style={{ border: "1px solid #d4d6d7", borderRadius: "10px" }}
-                  key={route.id}
-                >
-                  <div className="col-sm-8">
-                    <Accordion className="accordian_agency">
-                      <Card className="border-0 card_agency">
-                        <Card.Header className="d-flex align-items-center gap-4 border-0">
-                          <div className="col-sm-6 d-flex align-items-center gap-3">
-                            <CustomToggle
-                              eventKey={`${index}`}
-                              className="border-0"
-                            >
-                              <i
-                                className="fa fa-border fa-caret-down card_agency_accordian_icon"
-                                eventKey={`${index}`}
-                              />{" "}
-                            </CustomToggle>
-                            <h2>
-                              {route.routeLongName}{" "}
-                              <span>
-                                {route.routeShortName
-                                  ? `(${route.routeShortName})`
-                                  : ""}
-                              </span>{" "}
-                            </h2>
-                          </div>
-                          <div className="col-sm-6 text-end card_agency_icon">
-                            <i
-                              className="fa fa-edit"
-                              style={{ cursor: "pointer" }}
-                              title="Edit Route Name & Description"
-                              onClick={() => handleEdit(route)}
-                            />
-                            <i
-                              className="fa fa-trash ml-3"
-                              style={{ cursor: "pointer" }}
-                              title="Delete Route Name & Description"
-                              onClick={() => handleDelete(route.id)}
-                            />
-                          </div>
-                        </Card.Header>
-                        <Accordion.Collapse
-                          eventKey={`${index}`}
-                          className="px-5"
-                        >
-                          <Card.Body>
-                            <div className="content">
-                            <p className="text-secondary">{route.routeDesc}</p>
-                            <p>
-                             <AddTrip />
-                            </p>
-                            </div>
-                            <div className="map">  
-                            {/* <OnlyMap /> */}
-                              </div>   
-                          </Card.Body>
-                        </Accordion.Collapse>
-                      </Card>
-                    </Accordion>
-                  </div>
-                  <div className="col-sm-4">
-                    
-                  </div>
+              {routes.length === 0 ? (
+                <div className="text-center my-4">
+                  <h4>No routes data found.</h4>
                 </div>
-              ))}
+              ) : (
+                routes.map((route, index) => (
+                  <div
+                    className="row my-4"
+                    style={{
+                      border: "1px solid #d4d6d7",
+                      borderRadius: "10px",
+                    }}
+                    key={route.id}
+                  >
+                    <div className="col-sm-8">
+                      <Accordion className="accordian_agency">
+                        <Card className="border-0 card_agency">
+                          <Card.Header className="d-flex align-items-center gap-4 border-0">
+                            <div className="col-sm-6 d-flex align-items-center gap-3">
+                              <CustomToggle
+                                eventKey={`${index}`}
+                                className="border-0"
+                              >
+                                <i
+                                  className="fa fa-border fa-caret-down card_agency_accordian_icon"
+                                  eventKey={`${index}`}
+                                />{" "}
+                              </CustomToggle>
+                              <h2>
+                                {route.routeLongName}{" "}
+                                <span>
+                                  {route.routeShortName
+                                    ? `(${route.routeShortName})`
+                                    : ""}
+                                </span>{" "}
+                              </h2>
+                            </div>
+                            <div className="col-sm-6 text-end card_agency_icon">
+                              <i
+                                className="fa fa-edit"
+                                style={{ cursor: "pointer" }}
+                                title="Edit Route Name & Description"
+                                onClick={() => handleEdit(route)}
+                              />
+                              <i
+                                className="fa fa-trash ml-3"
+                                style={{ cursor: "pointer" }}
+                                title="Delete Route Name & Description"
+                                onClick={() => handleDelete(route.id)}
+                              />
+                            </div>
+                          </Card.Header>
+                          <Accordion.Collapse
+                            eventKey={`${index}`}
+                            className="px-5"
+                          >
+                            <Card.Body>
+                              <div className="content">
+                                <p className="text-secondary">
+                                  {route.routeDesc}
+                                </p>
+                                <p>
+                                  <AddTrip />
+                                </p>
+                              </div>
+                              <div className="map">{/* <OnlyMap /> */}</div>
+                            </Card.Body>
+                          </Accordion.Collapse>
+                        </Card>
+                      </Accordion>
+                    </div>
+                    <div className="col-sm-4"></div>
+                  </div>
+                ))
+              )}
             </Tab>
             <Tab eventKey="stops" title="Stops">
               <AddStops />
@@ -345,10 +388,10 @@ export const Agnecies = () => {
               <OptionalData />
             </Tab>
             <Tab eventKey="warning" title="Warnings">
-             <Warnings />
+              <Warnings />
             </Tab>
             <Tab eventKey="GTFS Data" title="GTFS-DATA">
-             <FirestoreDataDownloader />
+              <FirestoreDataDownloader />
             </Tab>
           </Tabs>
         </div>
@@ -366,7 +409,7 @@ export const Agnecies = () => {
           <Modal.Title>
             <b>
               {" "}
-              <h3>Create Company</h3>
+              <h3>Create Routes</h3>
             </b>
           </Modal.Title>
         </Modal.Header>
