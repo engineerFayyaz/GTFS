@@ -30,7 +30,7 @@ const Home = () => {
       {/* <LoadScript googleMapsApiKey="AIzaSyBDDCT1y6vpC4jJ3_LGzRnMF6OclbkDEfU" libraries={['places', 'geometry']}>
       <SavedRoutesMap/>
       </LoadScript> */}
-      <ToolsCards />
+      {/* <ToolsCards /> */}
       {/* <Tools /> */}
       <>
         {/* counter 2 */}

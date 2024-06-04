@@ -39,7 +39,7 @@ import { VehicleBlockCreator } from "./Pages/VehicleBlockCreator";
 import { MultipleStopTimetable } from "./Pages/MultipleStopTimetable";
 import { GTFSFiles } from "./Pages/GTFSFiles";
 import { AddTransit } from "./Pages/AddTransit";
-import { Agnecies } from "./Pages/Agencies";
+import Agnecies from "./Pages/Agencies";
 // import Home from "./Pages/Home";
 
 const ProjectRoutes = () => {

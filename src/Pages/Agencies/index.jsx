@@ -30,15 +30,15 @@ import { Link, useParams } from "react-router-dom";
 import Loader from "../../Components/Loader";
 import { AddStops } from "../../Components/Agencies/AddStops";
 import { AddServices } from "../../Components/Agencies/AddServices";
-import { AddRouteMap } from "../../Components/Agencies/AddRouteMap";
 import { OptionalData } from "../../Components/Agencies/OptionalData";
 import OnlyMap from "../../Components/OnlyMap";
 import { Warnings } from "../../Components/Agencies/Warnings";
 import FirestoreDataDownloader from "../../Components/FirestoreDataDownloader";
 import useExportGTFS from "../../Components/ExportGTFS";
 import { AddTrip } from "./components/AddTrip";
+import AddRouteMap from "../../Components/Agencies/AddRouteMap";
 
-export const Agnecies = () => {
+ const Agnecies = () => {
   const { id } = useParams(); // Get the id parameter from the URL
   const [loading, setLoading] = useState(true);
   const [show, setShow] = useState(false);
@@ -776,3 +776,4 @@ export const Agnecies = () => {
     </>
   );
 };
+export default Agnecies;

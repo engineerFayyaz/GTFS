@@ -97,7 +97,7 @@ const FirestoreDataDownloader = () => {
             <option value="pdf">PDF</option>
           </Form.Select>
         </Col>
-        <Col>
+        <Col style={{margin:"auto"}}>
           <Button onClick={handleDownload} disabled={!selectedCollection}>
             Download
           </Button>

@@ -78,16 +78,21 @@ export const AddTransit = () => {
       const companiesRef = collection(db, 'created_agencies');
       const q = query(companiesRef, where('userId', '==', userId));
       const snapshot = await getDocs(q);
-      const companyList = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const companyList = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt.toDate(), // Convert Firestore timestamp to Date
+        };
+      });
       setCompanyInfo(companyList);
     } catch (error) {
       console.error('Error fetching companies:', error);
       toast.error('Error fetching companies');
     }
   };
+
 
   const handleShow = () => setShow(true);
   const handleClose = () => {
@@ -156,8 +161,8 @@ export const AddTransit = () => {
         });
         setTimeout(() => {
           toast.error("Company with this name already exists.");
-        
-        },1000)
+
+        }, 1000)
         console.log("Company with this name already exists", snapshot);
         return;
       }
@@ -280,7 +285,7 @@ export const AddTransit = () => {
                     </h3>
                     <p className="cont_posi" style={{ wordWrap: "break-word", width: "80%" }}>
                       <br />
-                      <small>Created:</small>
+                      <small>Created: {moment(company.createdAt).format("MMMM Do YYYY,")}</small>
                     </p>
                   </div>
                 </figure>
