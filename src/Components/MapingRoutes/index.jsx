@@ -274,7 +274,7 @@ function MapingRoutes() {
       <Row>
         <Col style={{ height: '500px' }}>
           <GoogleMapReact
-            bootstrapURLKeys={{ key: "AIzaSyA6SzmrYZ9l1sxEev_InIxKI9aCwjlRAq0", libraries: ['places', 'directions'] }}
+            bootstrapURLKeys={{ key: "AIzaSyCt6m1rrV32jEStp8x-cgBL0WwL9zXKOG4", libraries: ['places', 'directions'] }}
             defaultCenter={{ lat: 41.9028, lng: 12.4964 }}
             defaultZoom={10}
             yesIWantToUseGoogleMapApiInternals
