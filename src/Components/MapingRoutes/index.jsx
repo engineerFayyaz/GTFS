@@ -235,11 +235,7 @@ function MapingRoutes() {
 
   return (
     <Container>
-      <Row>
-        <Col>
-          {renderRoutesFromFirestore()}
-        </Col>
-      </Row>
+     
       <Row className="my-4">
         <Col>
           <Card className="custom-card">
@@ -374,6 +370,11 @@ function MapingRoutes() {
           </Card>
         </Col>
       </Row>
+      {/* <Row>
+        <Col>
+          {renderRoutesFromFirestore()}
+        </Col>
+      </Row> */}
     </Container>
   );
 }
