@@ -183,34 +183,40 @@ function MapingRoutes() {
   return (
     <Container>
       <Row className="my-4">
-        <Col>
-          <Card className="custom-card">
+        <h2 className='text-center'>Add Route Map</h2>
+        <Col variant="12">
+          <Card className="custom-card mapping-routes">
             <Card.Body>
               <Form>
                 <Form.Group controlId="routeTitle" className="custom-form-group">
-                  <Form.Label>Title</Form.Label>
+                  <Form.Label className='d-block'>Title</Form.Label>
                   <Form.Control
                     type="text"
                     placeholder="Enter title"
+                    className='w-100'
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                   />
                 </Form.Group>
                 <Form.Group controlId="routeDescription" className="custom-form-group">
-                  <Form.Label>Description</Form.Label>
+                  <Form.Label className='d-block'>Description</Form.Label>
                   <Form.Control
                     as="textarea"
                     rows={3}
                     placeholder="Enter description"
+                    className='w-100'
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                   />
                 </Form.Group>
-                <Form.Group controlId="mapType" className="custom-form-group">
-                  <Form.Label>Map Type</Form.Label>
+                <Row>
+                  <Col>
+                  <Form.Group controlId="mapType" className="custom-form-group">
+                  <Form.Label className='d-block'>Map Type</Form.Label>
                   <Form.Control
                     as="select"
                     value={mapType}
+                    className='w-100'
                     onChange={(e) => handleMapTypeChange(e.target.value)}
                   >
                     <option value="roadmap">Map</option>
@@ -219,11 +225,14 @@ function MapingRoutes() {
                     <option value="hybrid">Hybrid</option>
                   </Form.Control>
                 </Form.Group>
-                <Form.Group controlId="travelMode" className="custom-form-group">
-                  <Form.Label>Travel Mode</Form.Label>
+                  </Col>
+                  <Col>
+                  <Form.Group controlId="travelMode" className="custom-form-group">
+                  <Form.Label className='d-block'>Travel Mode</Form.Label>
                   <Form.Control
                     as="select"
                     value={travelMode}
+                    className='w-100'
                     onChange={(e) => setTravelMode(e.target.value)}
                   >
                     <option value="WALKING">Walking</option>
@@ -232,7 +241,11 @@ function MapingRoutes() {
                     <option value="TRANSIT">Transit</option>
                   </Form.Control>
                 </Form.Group>
-                <Form.Group controlId="loopRoute" className="custom-form-group">
+                  </Col>
+                </Row>
+               
+               
+                <Form.Group controlId="loopRoute" className="custom-form-group d-block">
                   <Form.Check
                     type="checkbox"
                     label="Loop Route"
@@ -246,6 +259,7 @@ function MapingRoutes() {
         </Col>
       </Row>
       <Row className="my-4">
+        <h3 className='text-center'>Search Route</h3>
         <Col>
           <InputGroup className="mb-3 custom-input-group">
             <FormControl
@@ -290,15 +304,6 @@ function MapingRoutes() {
           </GoogleMapReact>
         </Col>
       </Row>
-      <Row className="my-4">
-        <Col className="d-flex justify-content-between">
-          <Button variant="primary" onClick={saveRoute}>Save Route</Button>
-          <Button variant="secondary" onClick={exportToGPX}>Export to GPX</Button>
-          <Button variant="secondary" onClick={exportToKML}>Export to KML</Button>
-          <Button variant="warning" onClick={handleUndoLastLeg}>Undo Last Leg</Button>
-          <Button variant="danger" onClick={handleRemoveAll}>Remove All</Button>
-        </Col>
-      </Row>
       <Row>
         <Col>
           <Card>
@@ -307,8 +312,16 @@ function MapingRoutes() {
                 <strong>Total Distance:</strong> {distance.toFixed(2)} km
               </Card.Text>
             </Card.Body>
+            <Card.Footer className=' saves-btns d-flex align-items-center justify-content-evenly'>
+            <Button variant="primary" onClick={saveRoute}>Save Route</Button>
+          <Button variant="info" onClick={exportToGPX}>Export to GPX</Button>
+          <Button variant="dark" onClick={exportToKML}>Export to KML</Button>
+          <Button variant="warning" onClick={handleUndoLastLeg}>Undo Last Leg</Button>
+          <Button variant="danger" onClick={handleRemoveAll}>Remove All</Button>
+            </Card.Footer>
           </Card>
         </Col>
+        
       </Row>
     </Container>
   );

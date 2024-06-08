@@ -4,6 +4,20 @@
   
   .custom-form-group {
     margin-bottom: 15px;
+
+    label{
+      font-weight: 600;
+      font-size: 18px;
+      color: rgba(0, 0, 0, 0.575);
+      font-family: "Poppins";
+    }
+    input, textarea, select{
+      border: 2px solid rgb(221, 219, 219);
+      margin-top: 5px;
+      font-family: "Poppins";
+      font-weight: 500;
+      text-transform: lowercase;
+    }
   }
   
   .custom-input-group .custom-button {
@@ -11,7 +25,12 @@
     border-color: #007bff;
     color: #fff;
   }
-  
+  .custom-input-group input{
+    border: 2px solid rgb(221, 219, 219);
+    font-family: "Poppins";
+    font-weight: 500;
+    text-transform: lowercase;
+  }
   .suggestions-container {
     border: 1px solid #ddd;
     max-height: 200px;
@@ -25,5 +44,10 @@
   
   .suggestion-item:hover {
     background-color: #f0f0f0;
+  }
+
+  .saves-btns button{
+    font-weight: 600;
+    font-family: "Poppins";
   }
   
