@@ -74,10 +74,28 @@ function MapingRoutes() {
 
     setRoutes(routesData);
   };
-
+  
   useEffect(() => {
     fetchRoutesFromFirestore();
   }, [db]);
+
+
+  const renderRoutesOnMap = (map, maps) => {
+    routes.forEach(route => {
+      const routeCoordinates = route.map(point => ({
+        lat: parseFloat(point.shape_pt_lat),
+        lng: parseFloat(point.shape_pt_lon)
+      }));
+      const routePath = new maps.Polyline({
+        path: routeCoordinates,
+        geodesic: true,
+        strokeColor: '#FF0000',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+      });
+      routePath.setMap(map);
+    });
+  };
 
 
   const renderRoutesFromFirestore = () => {
@@ -99,16 +117,18 @@ function MapingRoutes() {
 
   const saveRoute = async () => {
     await addDoc(collection(db, 'routes'), { path, title, description });
-    const shapeData = path.map((point, index) => ({
+    // Prepare data for routes.txt file
+    const routeData = path.map((point, index) => ({
       shape_id: title,
       shape_pt_lat: point.lat,
       shape_pt_lon: point.lng,
       shape_pt_sequence: index + 1,
     }));
-    const shapeText = shapeData.map(point => `${point.shape_id},${point.shape_pt_lat},${point.shape_pt_lon},${point.shape_pt_sequence}`).join('\n');
+    const shapeText = routeData.map(point => `${point.shape_id},${point.shape_pt_lat},${point.shape_pt_lon},${point.shape_pt_sequence}`).join('\n');
     const blob = new Blob([shapeText], { type: 'text/plain' });
-    FileSaver.saveAs(blob, 'shapes.txt');
+    FileSaver.saveAs(blob, 'routes.txt');
   };
+  
 
   const exportToGPX = () => {
     const gpxData = `
