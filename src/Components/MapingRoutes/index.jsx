@@ -5,6 +5,9 @@ import FileSaver from 'file-saver';
 import { Container, Form, Button, Row, Col, Card, InputGroup, FormControl } from 'react-bootstrap';
 import Marker from '../Marker';
 import './MapingRoutes.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMapMarker } from '@fortawesome/free-solid-svg-icons';
+
 
 function MapingRoutes() {
   const [path, setPath] = useState([]);
@@ -57,45 +60,68 @@ function MapingRoutes() {
     return distance / 1000; // in kilometers
   };
 
-    const fetchRoutesFromFirestore = async () => {
-    const querySnapshotShapes = await getDocs(collection(db, 'shapes'));
-    const querySnapshotShapes2 = await getDocs(collection(db, 'shapes2'));
-    const routesData = [];
-
-    querySnapshotShapes.forEach(doc => {
-      const data = doc.data();
-      routesData.push(data);
-    });
-
-    querySnapshotShapes2.forEach(doc => {
-      const data = doc.data();
-      routesData.push(data);
-    });
-
-    setRoutes(routesData);
+  const fetchRoutesFromFirestore = async () => {
+    try {
+      const querySnapshotShapes = await getDocs(collection(db, 'shapes'));
+      const querySnapshotShapes2 = await getDocs(collection(db, 'shapes2'));
+      
+      const routesData = [];
+      querySnapshotShapes.forEach(doc => {
+        routesData.push(doc.data());
+      });
+      querySnapshotShapes2.forEach(doc => {
+        routesData.push(doc.data());
+      });
+      setRoutes(routesData);
+    } catch (error) {
+      console.error('Error fetching routes:', error);
+    }
   };
   
   useEffect(() => {
     fetchRoutesFromFirestore();
   }, [db]);
 
-
+  
   const renderRoutesOnMap = (map, maps) => {
-    routes.forEach(route => {
-      const routeCoordinates = route.map(point => ({
-        lat: parseFloat(point.shape_pt_lat),
-        lng: parseFloat(point.shape_pt_lon)
-      }));
-      const routePath = new maps.Polyline({
-        path: routeCoordinates,
-        geodesic: true,
-        strokeColor: '#FF0000',
-        strokeOpacity: 0.8,
-        strokeWeight: 2,
+    if (map && maps && routes.length > 0) {
+      const bounds = new maps.LatLngBounds(); // Create bounds object to include all markers
+  
+      routes.forEach((route, index) => {
+        route.forEach((point, idx) => {
+          const markerIcon = {
+            path: FontAwesomeIcon ? FontAwesomeIcon(faMapMarker).html.join('') : '', // Get FontAwesome icon SVG path
+            fillColor: '#FF0000', // Fill color of the icon
+            fillOpacity: 1, // Opacity of the icon
+            anchor: new maps.Point(12, 24), // Icon anchor point
+            scale: 0.5, // Icon scale
+            strokeWeight: 0, // Stroke weight of the icon
+            labelOrigin: new maps.Point(12, 12) // Label origin point
+          };
+  
+          const marker = new maps.Marker({
+            position: { lat: parseFloat(point.shape_pt_lat), lng: parseFloat(point.shape_pt_lon) },
+            map: map,
+            icon: markerIcon // Set the icon for the marker
+          });
+  
+          // Extend bounds to include marker's position
+          bounds.extend(marker.getPosition());
+  
+          // Optionally, add event listeners to markers
+          marker.addListener('click', () => {
+            // Handle marker click event
+          });
+        });
       });
-      routePath.setMap(map);
-    });
+  
+      // Zoom the map to fit all markers within the bounds
+      if (routes.length > 0) {
+        map.fitBounds(bounds);
+      }
+    }
   };
+  
 
 
   const renderRoutesFromFirestore = () => {
@@ -182,16 +208,16 @@ function MapingRoutes() {
   };
 
   const calculateRoute = () => {
-    if (path.length < 2) return;
-
+    if (!mapsApi || !map || path.length < 2) return; // Add null check for mapsApi and map
+    
     const start = path[0];
     const end = path[path.length - 1];
     const waypoints = path.slice(1, -1).map(point => ({ location: point }));
-
-    const directionsService = new mapsApi.DirectionsService();
+  
+    const directionsService = new mapsApi.DirectionsService(); // Add null check for mapsApi
     const directionsRenderer = new mapsApi.DirectionsRenderer();
     directionsRenderer.setMap(map);
-
+  
     directionsService.route(
       {
         origin: start,
@@ -214,6 +240,7 @@ function MapingRoutes() {
       }
     );
   };
+  
 
   const handleUndoLastLeg = () => {
     setPath((currentPath) => {
@@ -241,9 +268,14 @@ function MapingRoutes() {
   };
 
   const renderPolylines = (map, maps) => {
-    routes.forEach(route => {
+    routes.forEach((route, index) => {
+      const routeCoordinates = route.map(point => ({
+        lat: parseFloat(point.shape_pt_lat),
+        lng: parseFloat(point.shape_pt_lon)
+      }));
+  
       new maps.Polyline({
-        path: route,
+        path: routeCoordinates,
         geodesic: true,
         strokeColor: '#FF0000',
         strokeOpacity: 0.8,
@@ -252,6 +284,7 @@ function MapingRoutes() {
       });
     });
   };
+  
 
   return (
     <Container>
@@ -356,7 +389,9 @@ function MapingRoutes() {
               setMap(map);
               setMapsApi(maps);
               renderPolylines(map, maps);
+              renderRoutesOnMap(map, maps); // Call the function to render routes with SVG markers
             }}
+            
             onClick={handleMapClick}
             options={{
               draggableCursor: 'crosshair',
