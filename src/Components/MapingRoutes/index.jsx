@@ -143,17 +143,40 @@ function MapingRoutes() {
 
   const saveRoute = async () => {
     await addDoc(collection(db, 'routes'), { path, title, description });
-    // Prepare data for routes.txt file
-    const routeData = path.map((point, index) => ({
-      shape_id: title,
-      shape_pt_lat: point.lat,
-      shape_pt_lon: point.lng,
-      shape_pt_sequence: index + 1,
-    }));
-    const shapeText = routeData.map(point => `${point.shape_id},${point.shape_pt_lat},${point.shape_pt_lon},${point.shape_pt_sequence}`).join('\n');
-    const blob = new Blob([shapeText], { type: 'text/plain' });
-    FileSaver.saveAs(blob, 'routes.txt');
+  
+    // Calculate distance traveled for each point in the path
+    let totalDistance = 0;
+    const routeData = path.map((point, index) => {
+      if (index > 0) {
+        totalDistance += haversineDistance(path[index - 1], point);
+      }
+      return {
+        shape_id: title, // assuming shape_id is the title of the route
+        shape_pt_lat: point.lat.toString(), // latitude as string
+        shape_pt_lon: point.lng.toString(), // longitude as string
+        shape_pt_sequence: (index + 1).toString(), // sequence as string
+        shape_dist_traveled: totalDistance.toFixed(4) // distance traveled as string
+      };
+    });
+  
+    // Add headers
+    const headers = "shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence,shape_dist_traveled";
+    
+    // Convert route data to text format
+    const shapeText = routeData.map(point => 
+      `${point.shape_id},${point.shape_pt_lat},${point.shape_pt_lon},${point.shape_pt_sequence},${point.shape_dist_traveled}`
+    ).join('\n');
+    
+    // Combine headers and data
+    const fileContent = `${headers}\n${shapeText}`;
+  
+    // Create and download the file
+    const blob = new Blob([fileContent], { type: 'text/plain' });
+    FileSaver.saveAs(blob, 'shapes.txt');
   };
+  
+  
+  
   
 
   const exportToGPX = () => {
