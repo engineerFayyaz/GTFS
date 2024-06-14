@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import GoogleMapReact from 'google-map-react';
-import { getFirestore, collection, getDocs, addDoc} from 'firebase/firestore';
+import { getFirestore, collection, getDocs, addDoc,writeBatch,doc} from 'firebase/firestore';
 import FileSaver from 'file-saver';
 import { Container, Form, Button, Row, Col, Card, InputGroup, FormControl } from 'react-bootstrap';
 import Marker from '../Marker';
 import './MapingRoutes.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarker } from '@fortawesome/free-solid-svg-icons';
+import { toast } from 'react-toastify';
 
 
 function MapingRoutes() {
@@ -142,38 +143,85 @@ function MapingRoutes() {
   };
 
   const saveRoute = async () => {
-    await addDoc(collection(db, 'routes'), { path, title, description });
+    try {
+      const routeRef = await addDoc(collection(db, 'routes'), { path, title, description });
+      const routeId = routeRef.id;
   
-    // Calculate distance traveled for each point in the path
-    let totalDistance = 0;
-    const routeData = path.map((point, index) => {
-      if (index > 0) {
-        totalDistance += haversineDistance(path[index - 1], point);
-      }
-      return {
-        shape_id: title, // assuming shape_id is the title of the route
-        shape_pt_lat: point.lat.toString(), // latitude as string
-        shape_pt_lon: point.lng.toString(), // longitude as string
-        shape_pt_sequence: (index + 1).toString(), // sequence as string
-        shape_dist_traveled: totalDistance.toFixed(4) // distance traveled as string
-      };
-    });
+      let totalDistance = 0;
+      const routeData = path.map((point, index) => {
+        if (index > 0) {
+          totalDistance += haversineDistance(path[index - 1], point);
+        }
+        return {
+          shape_id: title, // assuming shape_id is the title of the route
+          shape_pt_lat: point.lat.toString(), // latitude as string
+          shape_pt_lon: point.lng.toString(), // longitude as string
+          shape_pt_sequence: (index + 1).toString(), // sequence as string
+          shape_dist_traveled: totalDistance.toFixed(4) // distance traveled as string
+        };
+      });
   
-    // Add headers
-    const headers = "shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence,shape_dist_traveled";
-    
-    // Convert route data to text format
-    const shapeText = routeData.map(point => 
-      `${point.shape_id},${point.shape_pt_lat},${point.shape_pt_lon},${point.shape_pt_sequence},${point.shape_dist_traveled}`
-    ).join('\n');
-    
-    // Combine headers and data
-    const fileContent = `${headers}\n${shapeText}`;
+      const batch = writeBatch(db);
+      routeData.forEach(point => {
+        const shapeRef = doc(collection(db, 'shapes'));
+        batch.set(shapeRef, point);
+      });
+      await batch.commit();
   
-    // Create and download the file
-    const blob = new Blob([fileContent], { type: 'text/plain' });
-    FileSaver.saveAs(blob, 'shapes.txt');
+      const headers = "shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence,shape_dist_traveled";
+      const shapeText = routeData.map(point =>
+        `${point.shape_id},${point.shape_pt_lat},${point.shape_pt_lon},${point.shape_pt_sequence},${point.shape_dist_traveled}`
+      ).join('\n');
+      const fileContent = `${headers}\n${shapeText}`;
+      const blob = new Blob([fileContent], { type: 'text/plain' });
+      FileSaver.saveAs(blob, 'shapes.txt');
+      toast.success("Data saved successfully")
+    } catch (error) {
+      console.error('Error saving route:', error);
+    }
   };
+  
+
+  // const saveRoute = async () => {
+  //  const routeRef =await addDoc(collection(db, 'routes'), { path, title, description });
+  //  const routeId = routeRef.id;
+  //   // Calculate distance traveled for each point in the path
+  //   let totalDistance = 0;
+  //   const routeData = path.map((point, index) => {
+  //     if (index > 0) {
+  //       totalDistance += haversineDistance(path[index - 1], point);
+  //     }
+  //     return {
+  //       shape_id: title, // assuming shape_id is the title of the route
+  //       shape_pt_lat: point.lat.toString(), // latitude as string
+  //       shape_pt_lon: point.lng.toString(), // longitude as string
+  //       shape_pt_sequence: (index + 1).toString(), // sequence as string
+  //       shape_dist_traveled: totalDistance.toFixed(4) // distance traveled as string
+  //     };
+  //   });
+
+  //   const batch = db.batch();
+  //   routeData.forEach(point => {
+  //     const shapeRef = collection(db, 'shapes').doc();
+  //     batch.set(shapeRef, point);
+  //   });
+  //   await batch.commit();
+  
+  //   // Add headers
+  //   const headers = "shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence,shape_dist_traveled";
+    
+  //   // Convert route data to text format
+  //   const shapeText = routeData.map(point => 
+  //     `${point.shape_id},${point.shape_pt_lat},${point.shape_pt_lon},${point.shape_pt_sequence},${point.shape_dist_traveled}`
+  //   ).join('\n');
+    
+  //   // Combine headers and data
+  //   const fileContent = `${headers}\n${shapeText}`;
+  
+  //   // Create and download the file
+  //   const blob = new Blob([fileContent], { type: 'text/plain' });
+  //   FileSaver.saveAs(blob, 'shapes.txt');
+  // };
   
   
   
@@ -205,16 +253,26 @@ function MapingRoutes() {
     FileSaver.saveAs(blob, 'route.kml');
   };
 
+  const handleApiLoaded = (map, maps) => {
+    setMap(map);
+    setMapsApi(maps);
+    renderRoutesOnMap(map, maps);
+  };
+
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
     if (mapsApi && e.target.value) {
       const service = new mapsApi.places.AutocompleteService();
-      service.getPlacePredictions({ input: e.target.value }, (predictions) => {
-        setSuggestions(predictions || []);
+      service.getPlacePredictions({ input: e.target.value }, (predictions, status) => {
+        if (status === mapsApi.places.PlacesServiceStatus.OK) {
+          setSuggestions(predictions || []);
+        } else {
+          setSuggestions([]);
+        }
       });
     }
   };
-
+  
   const handleSuggestionClick = (suggestion) => {
     if (mapsApi && map) {
       const service = new mapsApi.places.PlacesService(map);
@@ -229,6 +287,7 @@ function MapingRoutes() {
       });
     }
   };
+  
 
   const calculateRoute = () => {
     if (!mapsApi || !map || path.length < 2) return; // Add null check for mapsApi and map
@@ -406,7 +465,7 @@ function MapingRoutes() {
           <GoogleMapReact
             bootstrapURLKeys={{ key: "AIzaSyCt6m1rrV32jEStp8x-cgBL0WwL9zXKOG4", libraries: ['places', 'directions'] }}
             defaultCenter={{ lat: 41.9028, lng: 12.4964 }}
-            defaultZoom={10}
+            defaultZoom={30}
             yesIWantToUseGoogleMapApiInternals
             onGoogleApiLoaded={({ map, maps }) => {
               setMap(map);
