@@ -7,7 +7,6 @@ import {
   getDocs,
   doc,
   deleteDoc,
-  Timestamp,
   query, where, serverTimestamp
 } from "firebase/firestore"; // Import the Firestore database
 import {
@@ -15,21 +14,26 @@ import {
   onAuthStateChanged,
 } from "firebase/auth"; // Import from Firebase Authentication
 import Header from "../../Components/Header";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import "./addtransit.css";
-import { Container, Form, Button, Modal } from 'react-bootstrap';
+import { Container, Form, Button, Modal, ProgressBar } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import Loader from "../../Components/Loader";
 import useImportGTFS from "../../Components/useImportGTFS";
 import Select from 'react-select';
 import countryList from 'react-select-country-list'
 import moment from 'moment-timezone';
-
+import JSZip from 'jszip';
 export const AddTransit = () => {
   const [show, setShow] = useState(false);
   const [companyInfo, setCompanyInfo] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedCompanies, setSelectedCompanies] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+
   const [formData, setFormData] = useState({
     companyName: "",
     country: "",
@@ -125,44 +129,65 @@ export const AddTransit = () => {
     }
   };
 
-  const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      console.log("Selected file type:", file.type); // Debugging line
+      if (file.type === 'application/zip' || file.name.endsWith('.zip')) {
+        try {
+          const zip = new JSZip();
+          const contents = await zip.loadAsync(file);
+          const files = [];
+
+          for (const filename of Object.keys(contents.files)) {
+            const fileData = await contents.files[filename].async('blob'); // Keeping file data as Blob
+            files.push({ filename, fileData });
+          }
+
+          setFiles(files);
+          toast.success("Zip file extracted successfully");
+        } catch (error) {
+          console.error('Failed to extract zip file:', error);
+          toast.error('Failed to extract zip file');
+        }
+      } else {
+        toast.error('Please select a valid zip file');
+      }
+    }
   };
+
+
 
   const handleChange = (selectedOption) => {
     setSelectedTimezone(selectedOption);
     setFormData({ ...formData, timezone: selectedOption.value });
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (selectedFile) {
-      console.log("Selected file:", selectedFile);
-      handleImport(selectedFile);
-    } else {
-      alert('Please select a file to import.');
-    }
-  };
-
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.companyName) {
+      toast.error("Please enter a company name");
+      return;
+    }
+
     try {
       setLoading(true);
+      setUploadProgress(0);
       if (!currentUser || !currentUser.emailVerified) {
         toast.error("Please login and verify your email.");
         return;
       }
+
       const companiesRef = collection(db, 'created_agencies');
       const q = query(companiesRef, where('companyName', '==', formData.companyName));
       const snapshot = await getDocs(q);
+
       if (!snapshot.empty) {
-        setFormData({
-          companyName: "",
-        });
+        setFormData({ companyName: "" });
         setTimeout(() => {
           toast.error("Company with this name already exists.");
-
-        }, 1000)
+        }, 1000);
         console.log("Company with this name already exists", snapshot);
         return;
       }
@@ -173,17 +198,51 @@ export const AddTransit = () => {
         createdAt: createdAt,
         userId: currentUser.uid,
       };
-      await addDoc(companiesRef, docData);
-      toast.success("Company added successfully");
+      const docRef = await addDoc(companiesRef, docData);
+
+      // Save files in Firebase Storage and store metadata in Firestore
+      const storage = getStorage();
+      const filesRef = collection(db, 'imported_files');
+
+      for (const file of files) {
+        const storageRef = ref(storage, `files/${docRef.id}/${file.filename}`);
+        const uploadTask = uploadBytesResumable(storageRef, file.fileData);
+
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(progress);
+          },
+          (error) => {
+            console.error('File upload error:', error);
+            toast.error('Failed to upload file');
+          },
+          async () => {
+            const fileURL = await getDownloadURL(uploadTask.snapshot.ref);
+            const fileDoc = {
+              companyId: docRef.id,
+              userId: currentUser.uid,
+              filename: file.filename,
+              createdAt: createdAt,
+              fileURL: fileURL,
+            };
+            await addDoc(filesRef, fileDoc);
+          }
+        );
+      }
+
+      toast.success("Company and files added successfully");
       fetchCompanies(currentUser.uid);
       handleClose();
     } catch (error) {
-      toast.error("Failed to add company");
-      console.error("Failed to add company", error);
+      toast.error("Failed to add company and files");
+      console.error("Failed to add company and files", error);
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleCheckboxChange = (id) => {
     setSelectedCompanies((prevSelected) =>
@@ -231,15 +290,27 @@ export const AddTransit = () => {
               Delete
             </Link>
             <Container className="mt-0">
-              <Form onSubmit={handleSubmit}>
+              <Form onSubmit={handleFormSubmit}>
+                <Form.Group controlId="companyName" className="mb-3">
+                  <Form.Label>Company Name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter company name"
+                    value={formData.companyName}
+                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                  />
+                </Form.Group>
                 <Form.Group controlId="formFile" className="mb-3">
                   <Form.Label>Choose a .zip file to import</Form.Label>
                   <Form.Control type="file" accept=".zip" onChange={handleFileChange} />
                 </Form.Group>
-                <Button variant="outline-dark" type="submit" className="rounded-2 px-3 py-2">
+                {loading && <ProgressBar now={uploadProgress} label={`${Math.round(uploadProgress)}%`} />}
+                <Button variant="outline-dark" type="submit" className="rounded-2 px-3 py-2" disabled={loading}>
                   Import GTFS
                 </Button>
               </Form>
+
+              {/* <ViewFiles userId={currentUser ? currentUser.uid : ''} /> */}
             </Container>
             <a href="#" className="btn btn-default border-0 " id="view_export_btn">
               <i className="fa fa-file-text">&nbsp;</i>View Exports
