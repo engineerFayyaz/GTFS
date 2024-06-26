@@ -18,7 +18,7 @@ module.exports = {
     'object-curly-spacing': ['error', 'always'],
     'comma-dangle': ['error', 'always-multiline'],
     'max-len': ['error', { 'code': 80 }],
-    'new-cap': ['error', { 'capIsNewExceptions': ['String', 'Number', 'Boolean'] }], // Only enforce for user-defined constructors
+    'new-cap': ['error', { 'capIsNewExceptions': ['String', 'Number', 'Boolean'] }],
   },
   overrides: [
     {
