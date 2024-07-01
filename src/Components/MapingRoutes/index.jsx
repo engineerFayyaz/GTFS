@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import GoogleMapReact from 'google-map-react';
-import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, addDoc} from 'firebase/firestore';
 import FileSaver from 'file-saver';
 import { Container, Form, Button, Row, Col, Card, InputGroup, FormControl } from 'react-bootstrap';
 import Marker from '../Marker';
@@ -21,15 +21,6 @@ function MapingRoutes() {
   const [isLoop, setIsLoop] = useState(false);
 
   const db = getFirestore();
-
-  useEffect(() => {
-    const fetchRoutes = async () => {
-      const routesSnapshot = await getDocs(collection(db, 'routes'));
-      const routesData = routesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setRoutes(routesData);
-    };
-    fetchRoutes();
-  }, [db]);
 
   const handleMapClick = useCallback((event) => {
     const newPoint = { lat: event.lat, lng: event.lng };
@@ -66,11 +57,78 @@ function MapingRoutes() {
     return distance / 1000; // in kilometers
   };
 
+    const fetchRoutesFromFirestore = async () => {
+    const querySnapshotShapes = await getDocs(collection(db, 'shapes'));
+    const querySnapshotShapes2 = await getDocs(collection(db, 'shapes2'));
+    const routesData = [];
+
+    querySnapshotShapes.forEach(doc => {
+      const data = doc.data();
+      routesData.push(data);
+    });
+
+    querySnapshotShapes2.forEach(doc => {
+      const data = doc.data();
+      routesData.push(data);
+    });
+
+    setRoutes(routesData);
+  };
+  
+  useEffect(() => {
+    fetchRoutesFromFirestore();
+  }, [db]);
+
+
+  const renderRoutesOnMap = (map, maps) => {
+    routes.forEach(route => {
+      const routeCoordinates = route.map(point => ({
+        lat: parseFloat(point.shape_pt_lat),
+        lng: parseFloat(point.shape_pt_lon)
+      }));
+      const routePath = new maps.Polyline({
+        path: routeCoordinates,
+        geodesic: true,
+        strokeColor: '#FF0000',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+      });
+      routePath.setMap(map);
+    });
+  };
+
+
+  const renderRoutesFromFirestore = () => {
+    return routes.map((route, index) => (
+      <Card key={index}>
+        <Card.Body>
+          <Card.Title>{route.shape_id}</Card.Title>
+          <Button onClick={() => handleDisplayRoute(route)}>Display Route</Button>
+        </Card.Body>
+      </Card>
+    ));
+  };
+
+  const handleDisplayRoute = (route) => {
+    const routePath = route.map(point => ({ lat: parseFloat(point.shape_pt_lat), lng: parseFloat(point.shape_pt_lon) }));
+    setPath(routePath);
+    calculateDistance(routePath);
+  };
+
   const saveRoute = async () => {
     await addDoc(collection(db, 'routes'), { path, title, description });
-    const blob = new Blob([JSON.stringify({ path, title, description })], { type: 'text/plain' });
-    FileSaver.saveAs(blob, 'shapes.txt');
+    // Prepare data for routes.txt file
+    const routeData = path.map((point, index) => ({
+      shape_id: title,
+      shape_pt_lat: point.lat,
+      shape_pt_lon: point.lng,
+      shape_pt_sequence: index + 1,
+    }));
+    const shapeText = routeData.map(point => `${point.shape_id},${point.shape_pt_lat},${point.shape_pt_lon},${point.shape_pt_sequence}`).join('\n');
+    const blob = new Blob([shapeText], { type: 'text/plain' });
+    FileSaver.saveAs(blob, 'routes.txt');
   };
+  
 
   const exportToGPX = () => {
     const gpxData = `
@@ -125,15 +183,15 @@ function MapingRoutes() {
 
   const calculateRoute = () => {
     if (path.length < 2) return;
-  
+
     const start = path[0];
     const end = path[path.length - 1];
     const waypoints = path.slice(1, -1).map(point => ({ location: point }));
-  
+
     const directionsService = new mapsApi.DirectionsService();
     const directionsRenderer = new mapsApi.DirectionsRenderer();
     directionsRenderer.setMap(map);
-  
+
     directionsService.route(
       {
         origin: start,
@@ -144,21 +202,18 @@ function MapingRoutes() {
       (result, status) => {
         if (status === 'OK') {
           directionsRenderer.setDirections(result);
-          calculateDistance(
-            result.routes[0].overview_path.map(point => ({
-              lat: point.lat(),
-              lng: point.lng(),
-            }))
-          );
+          const detailedPath = result.routes[0].overview_path.map(point => ({
+            lat: point.lat(),
+            lng: point.lng(),
+          }));
+          setPath(detailedPath);
+          calculateDistance(detailedPath);
         } else {
           console.error('Directions request failed due to ' + status);
         }
       }
     );
   };
-  
-  
-  
 
   const handleUndoLastLeg = () => {
     setPath((currentPath) => {
@@ -180,8 +235,27 @@ function MapingRoutes() {
     }
   };
 
+  const handleRouteClick = (routePath) => {
+    setPath(routePath);
+    calculateDistance(routePath);
+  };
+
+  const renderPolylines = (map, maps) => {
+    routes.forEach(route => {
+      new maps.Polyline({
+        path: route,
+        geodesic: true,
+        strokeColor: '#FF0000',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        map: map,
+      });
+    });
+  };
+
   return (
     <Container>
+     
       <Row className="my-4">
         <h2 className='text-center'>Add Route Map</h2>
         <Col variant="12">
@@ -288,20 +362,35 @@ function MapingRoutes() {
       <Row>
         <Col style={{ height: '500px' }}>
           <GoogleMapReact
-            bootstrapURLKeys={{ key: "AIzaSyA6SzmrYZ9l1sxEev_InIxKI9aCwjlRAq0", libraries: ['places', 'directions'] }}
+            bootstrapURLKeys={{ key: "AIzaSyCt6m1rrV32jEStp8x-cgBL0WwL9zXKOG4", libraries: ['places', 'directions'] }}
             defaultCenter={{ lat: 41.9028, lng: 12.4964 }}
             defaultZoom={10}
             yesIWantToUseGoogleMapApiInternals
             onGoogleApiLoaded={({ map, maps }) => {
               setMap(map);
               setMapsApi(maps);
+              renderPolylines(map, maps);
             }}
             onClick={handleMapClick}
+            options={{
+              draggableCursor: 'crosshair',
+              draggingCursor: 'move'
+            }}
           >
             {path.map((point, index) => (
               <Marker key={index} lat={point.lat} lng={point.lng} />
             ))}
           </GoogleMapReact>
+        </Col>
+      </Row>
+      <Row className="my-4">
+        <Col className="d-flex justify-content-between">
+          <Button variant="primary" onClick={saveRoute}>Save Route</Button>
+          <Button variant="secondary" onClick={exportToGPX}>Export to GPX</Button>
+          <Button variant="secondary" onClick={exportToKML}>Export to KML</Button>
+          <Button variant="warning" onClick={handleUndoLastLeg}>Undo Last Leg</Button>
+          <Button variant="danger" onClick={handleRemoveAll}>Remove All</Button>
+          <Button variant="success" onClick={calculateRoute}>Calculate Route</Button>
         </Col>
       </Row>
       <Row>
@@ -323,6 +412,11 @@ function MapingRoutes() {
         </Col>
         
       </Row>
+      {/* <Row>
+        <Col>
+          {renderRoutesFromFirestore()}
+        </Col>
+      </Row> */}
     </Container>
   );
 }

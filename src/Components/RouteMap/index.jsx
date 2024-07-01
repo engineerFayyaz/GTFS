@@ -12,7 +12,7 @@ const RouteMap = () => {
   useEffect(() => {
     // Load Google Maps API script
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBDDCT1y6vpC4jJ3_LGzRnMF6OclbkDEfU&libraries=geometry,drawing`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyA6SzmrYZ9l1sxEev_InIxKI9aCwjlRAq0&libraries=geometry,drawing`;
     script.onload = () => initMap();
     document.head.appendChild(script);
 
