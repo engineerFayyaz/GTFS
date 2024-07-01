@@ -7,17 +7,22 @@ import {
   getDocs,
   doc,
   deleteDoc,
+  updateDoc,
+  getDoc,
   query,
   where,
-  updateDoc,
+  orderBy,
+  limit,
 } from "firebase/firestore"; // Import the Firestore database
-import {getAuth, onAuthStateChanged} from "firebase/auth";
-import { Modal } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import GoogleMapReact from 'google-map-react';
+import { faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { Modal, Button, Form } from "react-bootstrap";
 import Loader from "../Loader";
-import OnlyMap from "../OnlyMap";
 import moment from 'moment-timezone';
 import Select from 'react-select';
+import SearchRoutes from "../SearchRoutes";
 
 export const AddStops = () => {
   const db = getFirestore();
@@ -25,12 +30,14 @@ export const AddStops = () => {
   const [show, setShow] = useState(false);
   const [stopsInfo, setStopsInfo] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [stops, setStops] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [editingStopId, setEditingStopId] = useState(null);
   const [timezones, setTimezones] = useState([]);
   const [selectedTimezone, setSelectedTimezone] = useState(null);
+  const [routes, setRoutes] = useState([]);
+  const [selectedRoutes, setSelectedRoutes] = useState([]);
   const [formData, setFormData] = useState({
+    RouteName: "",
     stopName: "",
     lat: "",
     long: "",
@@ -48,12 +55,93 @@ export const AddStops = () => {
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const firstMatchRef = useRef(null);
-  //   for modal
+  const [center, setCenter] = useState({ lat: 6.5244, lng: 3.3792 });
+  const [zoom, setZoom] = useState(15);
+  const [suggestions, setSuggestions] = useState([]);
+  const [map, setMap] = useState(null);
+  const [showOptionalFields, setShowOptionalFields] = useState(false);
+
+  const mapRef = useRef(null);
+  const mapsApi = window.google.maps;
+
+  useEffect(() => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setCenter({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      });
+    } else {
+      console.error('Geolocation is not available');
+    }
+  }, []);
+
+  const searchLocation = (term) => {
+    if (mapsApi && map && term) {
+      const service = new mapsApi.places.PlacesService(map);
+      const request = {
+        query: term,
+        fields: ['name', 'geometry'],
+      };
+      service.findPlaceFromQuery(request, (results, status) => {
+        if (status === mapsApi.places.PlacesServiceStatus.OK && results) {
+          const place = results[0];
+          const { lat, lng } = place.geometry.location;
+          setSuggestions([{ lat: lat(), lng: lng() }]);
+          map.setCenter({ lat: lat(), lng: lng() });
+          map.setZoom(15);
+        }
+      });
+    }
+  };
+  const fetchSuggestions = (term) => {
+    if (mapsApi && term) {
+      const service = new mapsApi.places.AutocompleteService();
+      service.getPlacePredictions({ input: term }, (predictions, status) => {
+        if (status === mapsApi.places.PlacesServiceStatus.OK && predictions) {
+          setSuggestions(predictions);
+        } else {
+          setSuggestions([]);
+        }
+      });
+    }
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    searchLocation(searchTerm);
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    const service = new mapsApi.places.PlacesService(map);
+    const request = {
+      placeId: suggestion.place_id,
+      fields: ['name', 'geometry'],
+    };
+    service.getDetails(request, (place, status) => {
+      if (status === mapsApi.places.PlacesServiceStatus.OK) {
+        const { lat, lng } = place.geometry.location;
+        setSearchTerm(suggestion.description);
+        setSuggestions([]);
+        setFormData({ ...formData, lat: lat(), long: lng() });
+        map.setCenter({ lat: lat(), lng: lng() });
+        map.setZoom(15);
+      }
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+  };
+
   const handleShow = () => setShow(true);
   const handleClose = () => {
     setShow(false);
     setEditingStopId(null);
     setFormData({
+      RouteName: "",
       stopName: "",
       lat: "",
       long: "",
@@ -68,7 +156,6 @@ export const AddStops = () => {
     });
   };
 
-  
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -87,7 +174,6 @@ export const AddStops = () => {
   const fetchStops = async (userId) => {
     try {
       setLoading(true);
-
       const docRef = collection(db, "Agencies_stops_data");
       const q = query(docRef, where("userId", "==", userId));
       const querySnapshot = await getDocs(q);
@@ -103,85 +189,6 @@ export const AddStops = () => {
       console.log("Error fetching stops: ", error.code, error.message);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Handle input changes
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-  useEffect(() => {
-    const tz = moment.tz.names().map(tz => ({ value: tz, label: tz }));
-    setTimezones(tz);
-  }, []);
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      setLoading(true);
-
-      if (!currentUser) {
-        toast.error("Please login to add/update stops.");
-        return;
-      }
-
-      const stopsData = {
-        ...formData,
-        userId: currentUser.uid,
-      };
-
-      if (editingStopId) {
-        await updateDoc(doc(db, "Agencies_stops_data", editingStopId), stopsData);
-        setTimeout(() => {
-          toast.success("Stop updated successfully");
-        }, 1000);
-      } else {
-        await addDoc(collection(db, "Agencies_stops_data"), stopsData);
-        setTimeout(() => {
-          toast.success("Stop added successfully");
-        }, 1000);
-      }
-      handleClose();
-      fetchStops(currentUser.uid);
-    } catch (error) {
-      toast.error("Error saving stop data: " + error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleEdit = (stop) => {
-    setFormData({
-      stopName: stop.stopName || "",
-      lat: stop.lat || "",
-      long: stop.long || "",
-      stopCode: stop.stopCode || "",
-      type: stop.type || "",
-      desc: stop.desc || "",
-      stopUrl: stop.stopUrl || "",
-      fareZone: stop.fareZone || "",
-      parentStation: stop.parentStation || "",
-      timeZone: stop.timeZone || "",
-      boarding: stop.boarding || "",
-    });
-    setEditingStopId(stop.id);
-    setShow(true);
-  };
-
-  const handleDelete = async (stopId) => {
-    if (window.confirm("Are you sure you want to delete this stop?")) {
-      try {
-        await deleteDoc(doc(db, "Agencies_stops_data", stopId));
-        setStops(stops.filter((stop) => stop.id !== stopId));
-        toast.success("Stop deleted successfully");
-        fetchStops(currentUser.uid);
-      } catch (error) {
-        console.error("Error deleting stop: ", error);
-        toast.error("Failed to delete stop");
-      }
     }
   };
 
@@ -202,6 +209,16 @@ export const AddStops = () => {
     }
   }, [filteredStops, searchTerm]);
 
+  useEffect(() => {
+    if (currentUser) {
+      const tzOptions = moment.tz.names().map((tz) => ({
+        value: tz,
+        label: tz,
+      }));
+      setTimezones(tzOptions);
+    }
+  }, [currentUser]);
+
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -213,6 +230,10 @@ export const AddStops = () => {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  const handleToggleOptionalFields = () => {
+    setShowOptionalFields(!showOptionalFields);
   };
 
   const paginatedStops = filteredStops.slice(
@@ -228,648 +249,386 @@ export const AddStops = () => {
 
   const handleChange = (selectedOption) => {
     setSelectedTimezone(selectedOption);
-    setFormData({ ...formData, timezone: selectedOption.value });
+    setFormData({ ...formData, timeZone: selectedOption.value });
   };
-  return (
-    <>
-      <div
-        id="stops-grid_wrapper"
-        className="container dataTables_wrapper form-inline dt-bootstrap"
-      >
-        <div className="row d-flex align-items-center justify-content-between w-100 my-3">
-          <div className="col-sm-4">
-            <button
-              id="add_stop_btn"
-              className="btn btn-outline-primary text-dark px-3 py-2"
-              style={{ marginTop: 0 }}
-              onClick={handleShow}
-            >
-              <i className="fa fa-map-marker mr-1"></i>Add stop
-            </button>
-            <br />
-          </div>
-          <div className="col-sm-4">
-            <div className="dataTables_length" id="stops-grid_length">
-              <label>
-                Show{" "}
-                <select
-                  name="stops-grid_length"
-                  aria-controls="stops-grid"
-                  className="form-control input-sm mx-1"
-                  value={entriesPerPage}
-                  onChange={handleEntriesChange}
-                >
-                  <option value={10}>10</option>
-                  <option value={25}>25</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                </select>{" "}
-                entries
-              </label>
-            </div>
-          </div>
-          <div className="col-sm-4 text-right">
-            <div id="stops-grid_filter" className="dataTables_filter">
-              <label>
-                Search:
-                <input
-                  type="search"
-                  className="form-control input-sm mx-1"
-                  placeholder=""
-                  aria-controls="stops-grid"
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                />
-              </label>
-            </div>
-          </div>
-        </div>
-        <div className="row">
-          <div className="col-sm-12">
-            <table
-              id="stops-grid"
-              className="table table-striped table-bordered dataTable"
-              cellSpacing={0}
-              style={{ width: "100%" }}
-              role="grid"
-              aria-describedby="stops-grid_info"
-            >
-              <thead>
-                <tr role="row">
-                  <th
-                    className="sorting_asc"
-                    tabIndex={0}
-                    aria-controls="stops-grid"
-                    rowSpan={1}
-                    colSpan={1}
-                    style={{ width: "268.333px" }}
-                    aria-label="Stop Name: activate to sort column descending"
-                    aria-sort="ascending"
-                  >
-                    Stop Name
-                  </th>
-                  <th
-                    className="sorting_disabled"
-                    rowSpan={1}
-                    colSpan={1}
-                    style={{ width: "491.333px" }}
-                    aria-label="Routes"
-                  >
-                    Routes
-                  </th>
-                  <th
-                    className="sorting_disabled text-center"
-                    rowSpan={1}
-                    colSpan={1}
-                    style={{ width: "100.333px" }}
-                    aria-label="Edit"
-                  >
-                    Edit
-                  </th>
-                  <th
-                    className="sorting_disabled text-center"
-                    rowSpan={1}
-                    colSpan={1}
-                    style={{ width: 178 }}
-                    aria-label="Remove"
-                  >
-                    Remove
-                  </th>
-                </tr>
-              </thead>
-              <tfoot>
-                <tr>
-                  <th rowSpan={1} colSpan={1}>
-                    Stop Name
-                  </th>
-                  <th rowSpan={1} colSpan={1}>
-                    Routes
-                  </th>
-                  <th className="text-center" rowSpan={1} colSpan={1}>
-                    Edit
-                  </th>
-                  <th className="text-center" rowSpan={1} colSpan={1}>
-                    Remove
-                  </th>
-                </tr>
-              </tfoot>
-              <tbody>
-                {paginatedStops.length > 0 ? (
-                  paginatedStops.map((stop, index) => (
-                    <tr
-                      role="row"
-                      className="odd"
-                      key={stop.id}
-                      ref={index === 0 ? firstMatchRef : null}
-                      style={{
-                        backgroundColor: stop.stopName
-                          .toLowerCase()
-                          .includes(searchTerm.toLowerCase())
-                          ? "#ffff99"
-                          : "",
-                      }}
-                    >
-                      <td className="sorting_1">{stop.stopName}</td>
-                      <td>Not assigned to any route</td>
-                      <td className="text-center">
-                        <Link
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleEdit(stop);
-                          }}
-                        >
-                          <i className="fa fa-edit" />
-                        </Link>
-                      </td>
-                      <td className="text-center">
-                        <a
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleDelete(stop.id);
-                          }}
-                        >
-                          <i className="fa fa-close" />
-                        </a>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="4" className="text-center">
-                      No data available
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-            <div
-              id="stops-grid_processing"
-              className="dataTables_processing panel panel-default"
-              style={{ display: loading ? "block" : "none" }}
-            >
-              Processing...
-            </div>
-          </div>
-        </div>
-        <div className="row d-flex align-items-center justify-content-between w-100">
-          <div className="col-sm-5">
-            <div
-              className="dataTables_info"
-              id="stops-grid_info"
-              role="status"
-              aria-live="polite"
-            >
-              {`Showing ${
-                filteredStops.length > 0
-                  ? (currentPage - 1) * entriesPerPage + 1
-                  : 0
-              } to ${Math.min(
-                currentPage * entriesPerPage,
-                filteredStops.length
-              )} of ${filteredStops.length} entries`}
-            </div>
-          </div>
-          <div className="col-sm-7 text-end pr-3">
-            <div
-              className="dataTables_paginate paging_simple_numbers float-end pr-4"
-              id="stops-grid_paginate"
-            >
-              <ul className="pagination">
-                <li
-                  className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
-                >
-                  <a
-                    className="page-link"
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (currentPage > 1) handlePageChange(currentPage - 1);
-                    }}
-                  >
-                    Previous
-                  </a>
-                </li>
-                {[...Array(totalPages).keys()].map((page) => (
-                  <li
-                    key={page + 1}
-                    className={`page-item ${
-                      currentPage === page + 1 ? "active" : ""
-                    }`}
-                  >
-                    <a
-                      className="page-link"
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handlePageChange(page + 1);
-                      }}
-                    >
-                      {page + 1}
-                    </a>
-                  </li>
-                ))}
-                <li
-                  className={`page-item ${
-                    currentPage === totalPages ? "disabled" : ""
-                  }`}
-                >
-                  <Link
-                    className="page-link"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (currentPage < totalPages)
-                        handlePageChange(currentPage + 1);
-                    }}
-                  >
-                    Next
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <Modal
-        show={show}
-        onHide={handleClose}
-        centered
-        backdrop="static"
-        size="md"
-        responsive
-        className="add_company_modal"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <b>
-              {" "}
-              <h3>{editingStopId ? "Edit Stop" : "Create Stop"}</h3>
-            </b>
-          </Modal.Title>
-        </Modal.Header>
-        <form id="add_stop_form" onSubmit={handleSubmit} className="p-3">
-          <div className="row">
-            <div className="form-group col-sm-9">
-              <div className="modal_macs">
-                <label htmlFor="stop_name_txt">
-                  Stop Name<span className="requ-lft">Required</span>
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="stopName"
-                  id="stop_name_txt"
-                  required
-                  value={formData.stopName}
-                  onChange={handleInputChange}
-                  placeholder="E.g. 465 Smith St or Bay 5 Main Depot"
-                />
-                <input
-                  type="hidden"
-                  className="form-control"
-                  name="stop_file_id"
-                  id="stop_file_id"
-                  defaultValue={98477}
-                />
-              </div>
-            </div>
-            <div className="form-group col-sm-3" style={{ display: "none" }}>
-              <label htmlFor="stop_id">
-                Id<span className="requ-lft">Required</span>
-              </label>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const newStopData = { ...formData, userId: currentUser.uid };
+    try {
+      if (editingStopId) {
+        const stopDoc = doc(db, "Agencies_stops_data", editingStopId);
+        await updateDoc(stopDoc, newStopData);
+        toast.success("Stop updated successfully");
+        setEditingStopId(null);
+      } else {
+        await addDoc(collection(db, "Agencies_stops_data"), newStopData);
+        toast.success("Stop added successfully");
+      }
+      setFormData({
+        RouteName: "",
+        stopName: "",
+        lat: "",
+        long: "",
+        stopCode: "",
+        type: "",
+        desc: "",
+        stopUrl: "",
+        fareZone: "",
+        parentStation: "",
+        timeZone: "",
+        boarding: "",
+      });
+      setShow(false);
+      fetchStops(currentUser.uid);
+    } catch (error) {
+      console.error("Error saving stop:", error);
+      toast.error("Error saving stop:", error);
+    }
+  };
+
+  const handleRouteSelect = (selectedRouteId) => {
+    setFormData((prevData) => ({ ...prevData, RouteName: selectedRouteId }));
+  };
+
+  const handleEdit = (stop) => {
+    setFormData({
+      RouteName:stop.RouteName || "",
+      stopName: stop.stopName || "",
+      lat: stop.lat || "",
+      long: stop.long || "",
+      stopCode: stop.stopCode || "",
+      type: stop.type || "",
+      desc: stop.desc || "",
+      stopUrl: stop.stopUrl || "",
+      fareZone: stop.fareZone || "",
+      parentStation: stop.parentStation || "",
+      timeZone: stop.timeZone || "",
+      boarding: stop.boarding || "",
+    });
+    setEditingStopId(stop.id);
+    handleShow();
+  };
+
+  const handleDelete = async (id) => {
+    if (!currentUser) {
+      toast.error("Please login to delete stops.");
+      return;
+    }
+
+    if (window.confirm("Are you sure you want to delete this stop?")) {
+      try {
+        setLoading(true);
+        await deleteDoc(doc(db, "Agencies_stops_data", id));
+        setStopsInfo((prevStops) => prevStops.filter((stop) => stop.id !== id));
+        setFilteredStops((prevStops) => prevStops.filter((stop) => stop.id !== id));
+        setTimeout(() => {
+          toast.success("Stop deleted successfully");
+        }, 1000);
+      } catch (error) {
+        toast.error("Error deleting stop: " + error.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  return (
+    <div className="container mt-4">
+      <ToastContainer position="top-center" />
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>Stops</h2>
+        <Button variant="primary" onClick={handleShow}>
+          Add Stop
+        </Button>
+      </div>
+      <div className="row mb-3">
+        <div className="col-md-6">
+          <form onSubmit={handleSearchSubmit}>
+            <div className="input-group">
               <input
                 type="text"
                 className="form-control"
-                name="stop_id"
-                id="stop_id"
-                defaultValue=""
-                onchange="show_service_alert()"
-                required=""
+                placeholder="Search stops"
+                value={searchTerm}
+                onChange={handleSearchChange}
               />
-              <input
-                type="hidden"
-                name="hdn_stop_fld"
-                id="hdn_stop_fld"
-                defaultValue=""
-              />
-            </div>
-          </div>
-          <div className="row">
-            <div style={{ textAlign: "center" }}>
-              <small>
-                <i>
-                  Search for locations using the magnifying glass{" "}
-                  <i className="fa fa-search" aria-hidden="true" />
-                  <br />
-                  Click on the map to place the marker at the stop's location
-                  (latitude and longitude).
-                  <br />
-                  Zoom the map and position the marker to exactly where the
-                  vehicle stops/departs.
-                </i>
-              </small>
-            </div>
-            <OnlyMap />
-          </div>
-          <br />
-          <div className="row">
-            <div className="form-group col-sm-6">
-              <div className="modal_macs">
-                <label htmlFor="stop_lat">
-                  Latitude <span className="requ-lft">Required</span>
-                </label>
-                <input
-                  type="text"
-                  name="lat"
-                  id="stop_lat"
-                  className="form-control"
-                  required=""
-                  value={formData.lat}
-                  onChange={handleInputChange}
-                  title=""
-                />
+              <div className="input-group-append">
+                <button className="btn btn-primary" type="submit">
+                  Search
+                </button>
               </div>
             </div>
-            <div className="form-group col-sm-6">
-              <div className="modal_macs">
-                <label htmlFor="stop_lon">
-                  Longitude <span className="requ-lft">Required</span>
-                </label>
-                <input
-                  type="text"
-                  name="lon"
-                  id="stop_lon"
-                  className="form-control"
-                  required=""
-                  value={formData.lon}
-                  onChange={handleInputChange}
-                  title=""
-                />
-              </div>
-            </div>
-          </div>
-          <div className="panel-group" id="accordion">
-            <div className="panel panel-default">
-              <div className="panel-heading">
-                {/* h4 class="panel-title" */}
-                <a
-                  data-toggle="collapse"
-                  data-parent="#accordion"
-                  href="#collapseTwo"
-                >
-                  Optional Fields (open/close)
-                </a>
-                {/*/h4 */}
-              </div>
-              <div
-                id="collapseTwo"
-                className="panel-collapse out collapse in"
-                style={{}}
+          </form>
+        </div>
+        <div className="col-md-6 text-right">
+          <label className="mr-2">Entries per page:</label>
+          <select
+            value={entriesPerPage}
+            onChange={handleEntriesChange}
+            className="form-control d-inline-block w-auto"
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="table-responsive">
+        <table className="table table-bordered table-hover">
+          <thead className="thead-light">
+            <tr>
+              <th>RouteName</th>
+              <th>Stop Name</th>
+              <th>Latitude</th>
+              <th>Longitude</th>
+              <th>Stop Code</th>
+              <th>Type</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedStops.map((stop, index) => (
+              <tr key={stop.id} ref={index === 0 ? firstMatchRef : null}>
+                <td>{stop.RouteName}</td>
+                <td>{stop.stopName}</td>
+                <td>{stop.lat}</td>
+                <td>{stop.long}</td>
+                <td>{stop.stopCode}</td>
+                <td>{stop.type}</td>
+                <td>{stop.desc}</td>
+                <td>
+                  <button
+                    className="btn btn-sm btn-primary mr-2"
+                    onClick={() => handleEdit(stop)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="btn btn-sm btn-danger"
+                    onClick={() => handleDelete(stop.id)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="d-flex justify-content-between align-items-center">
+        <div>
+          Showing {paginatedStops.length} of {filteredStops.length} entries
+        </div>
+        <nav>
+          <ul className="pagination">
+            {Array.from({ length: totalPages }, (_, index) => (
+              <li
+                key={index}
+                className={`page-item ${currentPage === index + 1 ? "active" : ""
+                  }`}
               >
-                <div className="panel-body">
-                  <div className="row">
-                    <div className="form-group col-sm-5">
-                      <div className="modal_macs">
-                        <label htmlFor="stop_code">Stop Code</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="stopCode"
-                          value={formData.stopCode}
-                          onChange={handleInputChange}
-                          id="stop_code"
-                          placeholder="E.g. Stop 465"
-                        />
-                      </div>
-                    </div>
-                    <div className="form-group col-sm-7">
-                      <div className="modal_macs">
-                        <label htmlFor="location_type">Type</label>
-                        <div className="custom_search_parent">
-                          <select
-                            className="custom_search"
-                            name="type"
-                            id="location_type"
-                            value={formData.type}
-                            onChange={handleInputChange}
-                          >
-                            <option value="" disabled="disabled">
-                              Select One
-                            </option>
-                            <option
-                              value={0}
-                              title="A location where passengers board or disembark from a transit vehicle"
-                              selected="selected"
-                            >
-                              Stop
-                            </option>
-                            <option
-                              value={1}
-                              title="A physical structure or area that contains one or more stops"
-                            >
-                              Terminal/Station (group of stops)
-                            </option>
-                            <option
-                              value={2}
-                              title=" A location where passengers can enter or exit a station from the street."
-                            >
-                              Entrance/Exit
-                            </option>
-                            <option
-                              value={3}
-                              title="A location within a station, not matching any other location, that can be used to link together pathways"
-                            >
-                              Generic Node
-                            </option>
-                            <option
-                              value={4}
-                              title="A specific location on a platform, where passengers can board and/or alight vehicles"
-                            >
-                              Boarding Area
-                            </option>
-                          </select>
-                          <span className="cont_arrow" />
-                        </div>
-                      </div>
-                    </div>
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+
+      <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>{editingStopId ? "Edit Stop" : "Add Stop"}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleSubmit}>
+          <Form.Group controlId="RouteName">
+              <Form.Label>Route Name</Form.Label>
+              <SearchRoutes userId={currentUser?.uid} onSelectRoute={(route) => handleRouteSelect(route.id)} />
+            </Form.Group>
+            <Form.Group controlId="stopName">
+              <Form.Label>Stop Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="stopName"
+                value={formData.stopName}
+                onChange={handleInputChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="searchTerm">
+              <Form.Label>Search Location</Form.Label>
+              <Form.Control
+                type="text"
+                name="searchTerm"
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  fetchSuggestions(e.target.value);
+                }}
+                required
+              />
+              <div className="suggestions">
+                {suggestions.map((suggestion, index) => (
+                  <div
+                    key={index}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                  >
+                    {suggestion.description}
                   </div>
-                  <div className="row">
-                    <div className="form-group col-sm-12">
-                      <label htmlFor="stop_desc">Description</label>
-                      <textarea
-                        className="form-control"
-                        name="desc"
-                        value={formData.desc}
-                        onChange={handleInputChange}
-                        id="stop_desc"
-                        placeholder="Enter the stop's features. E.g. Benches, covered access, car parking and local amenities"
-                        cols={2}
-                        style={{ lineHeight: "normal" }}
-                        defaultValue={""}
-                      />
-                    </div>
-                  </div>
-                  <div className="row">
-                    <div className="form-group col-sm-12">
-                      <label htmlFor="stop_url">
-                        Stop URL
-                        <a
-                          target="_blank"
-                          className="test_link fetch_link"
-                          href="#"
-                          style={{
-                            fontSize: 12,
-                            paddingLeft: 15,
-                            paddingTop: 6,
-                          }}
-                        >
-                          Test Link
-                        </a>
-                      </label>
-                      <input
-                        type="url"
-                        className="form-control"
-                        placeholder="The web page for a train station, bus depot or terminal"
-                        name="stopUrl"
-                        id="stop_url"
-                        value={formData.stopUrl}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                  </div>
-                  <div className="row">
-                    <div className="form-group col-sm-6">
-                      <div className="modal_macs">
-                        <label htmlFor="zone_id">Fare Zone</label>
-                        <div className="custom_search_parent">
-                          <select
-                            className="custom_search"
-                            name="fareZone"
-                            id="zone_id"
-                            value={formData.fareZone}
-                            onChange={handleInputChange}
-                          >
-                            {" "}
-                            <option
-                              value=""
-                              disabled="disabled"
-                              selected="selected"
-                            >
-                              No fare zones setup yet
-                            </option>
-                          </select>
-                          <span className="cont_arrow" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="form-group col-sm-6">
-                      <div className="modal_macs">
-                        <label htmlFor="parent_station">Parent Station</label>
-                        <div className="custom_search_parent">
-                          <select
-                            className="custom_search"
-                            name="parentStation"
-                            id="parent_station"
-                            value={formData.parentStation}
-                            onChange={handleInputChange}
-                          >
-                            <option
-                              value=""
-                              title="A station cannot contain other stations"
-                            >
-                              Not Applicable
-                            </option>
-                          </select>
-                          <span className="cont_arrow" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="row">
-                    <div className="form-group col-sm-12">
-                      <div className="modal_macs">
-                        <label htmlFor="stop_timezone">Time Zone</label>
-                        <div className="custom_search_parent">
-                  <Select
-                    name="timezone"
-                    className="custom_search"
-                    id="time_zone"
-                    required
-                    onChange={handleChange}
-                    value={selectedTimezone}
-                    options={timezones}
-                    placeholder="Select One"
-                  />
-                  {formData.timezone && (
-                    <div>
-                      <p>Selected Timezone: {formData.timezone}</p>
-                    </div>
-                  )}
-                </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="row">
-                    <div className="form-group col-sm-12">
-                      <div className="modal_macs">
-                        <label htmlFor="wheelchair_boarding">
-                          Wheelchair Boarding
-                        </label>
-                        <div
-                          className="custom_search_parent"
-                          id="wheel_board_div"
-                        >
-                          <select
-                            className="custom_search"
-                            name="boarding"
-                            value={formData.boarding}
-                            onChange={handleInputChange}
-                          >
-                            <option value={0}>
-                              Refer parent station accessibility
-                            </option>
-                            <option value={1}>
-                              Accessible path from outside station to
-                              stop/platform
-                            </option>
-                            <option value={2}>
-                              No accessible path from outside station to
-                              stop/platform
-                            </option>
-                          </select>
-                          <span className="cont_arrow" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
+            </Form.Group>
+            <Form.Group controlId="lat">
+              <Form.Label>Latitude</Form.Label>
+              <Form.Control
+                type="text"
+                name="lat"
+                value={formData.lat}
+                onChange={handleInputChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="long">
+              <Form.Label>Longitude</Form.Label>
+              <Form.Control
+                type="text"
+                name="long"
+                value={formData.long}
+                onChange={handleInputChange}
+                required
+              />
+            </Form.Group>
+            <div style={{ height: '300px', width: '100%' }}>
+              <GoogleMapReact
+                bootstrapURLKeys={{ key: process.env.REACT_APP_GOOGLE_MAPS_API_KEY }}
+                defaultCenter={center}
+                defaultZoom={zoom}
+                yesIWantToUseGoogleMapApiInternals
+                onGoogleApiLoaded={({ map, maps }) => setMap(map)}
+              >
+                {formData.lat && formData.long && (
+                  <div
+                    lat={formData.lat}
+                    lng={formData.long}
+                    style={{
+                      color: 'red',
+                      backgroundColor: 'white',
+                      padding: '10px',
+                      display: 'inline-flex',
+                      textAlign: 'center',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '100%',
+                      transform: 'translate(-50%, -50%)'
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faMapMarkerAlt} size="2x" />
+                  </div>
+                )}
+              </GoogleMapReact>
             </div>
-          </div>
-          <div className="clearfix" />
-          <div className="modal-footer">
-            <button
-              data-dismiss="modal"
-              className="btn btn-default"
-              type="button"
-              onClick={handleClose}
-            >
-              Cancel
-            </button>
-            <input type="hidden" name="action" defaultValue="insert" />
-            <button
-              className="btn btn-success"
-              type="submit"
-              name="add_submit"
-              id="add_submit"
-            >
-              {editingStopId ? "Update" : "Submit"}
-            </button>
-          </div>
-        </form>
+            <Button onClick={handleToggleOptionalFields}>
+              {showOptionalFields ? "Hide Optional Fields" : "Show Optional Fields"}
+            </Button>
+            {showOptionalFields && (
+              <>
+                <Form.Group controlId="stopCode">
+                  <Form.Label>Stop Code</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="stopCode"
+                    value={formData.stopCode}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+                <Form.Group controlId="type">
+                  <Form.Label>Type</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="type"
+                    value={formData.type}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+                <Form.Group controlId="desc">
+                  <Form.Label>Description</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="desc"
+                    value={formData.desc}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+                <Form.Group controlId="stopUrl">
+                  <Form.Label>Stop URL</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="stopUrl"
+                    value={formData.stopUrl}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+                <Form.Group controlId="fareZone">
+                  <Form.Label>Fare Zone</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="fareZone"
+                    value={formData.fareZone}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+                <Form.Group controlId="parentStation">
+                  <Form.Label>Parent Station</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="parentStation"
+                    value={formData.parentStation}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+                <Form.Group controlId="boarding">
+                  <Form.Label>Boarding</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="boarding"
+                    value={formData.boarding}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </>
+            )}
+            <Form.Group controlId="timeZone">
+              <Form.Label>Timezone</Form.Label>
+              <Select
+                value={selectedTimezone}
+                onChange={handleChange}
+                options={timezones}
+                name="timeZone"
+              />
+            </Form.Group>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={handleClose}>
+                Close
+              </Button>
+              <Button variant="primary" type="submit">
+                {editingStopId ? "Update Stop" : "Add Stop"}
+              </Button>
+            </Modal.Footer>
+          </Form>
+        </Modal.Body>
       </Modal>
-    </>
+    </div>
   );
 };
+
+export default AddStops;

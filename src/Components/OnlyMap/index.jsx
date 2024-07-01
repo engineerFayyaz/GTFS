@@ -1,79 +1,50 @@
-import React, { useState, useEffect } from "react";
-// import "./map.css";
-import { WhatsappShareButton, FacebookShareButton, InstapaperShareButton } from 'react-share';
+import React, { useState } from "react";
+import GoogleMapReact from 'google-map-react';
+import Marker from '../Marker';
 
 const OnlyMap = () => {
   const [map, setMap] = useState(null);
-  const [routes, setRoutes] = useState([]);
-  const [totalDistance, setTotalDistance] = useState(0);
-  const [viewOption, setViewOption] = useState("Map");
-  const [markedPoints, setMarkedPoints] = useState([]);
+  const [mapsApi, setMapsApi] = useState(null);
+  const [path, setPath] = useState([]);
 
-  useEffect(() => {
-    // Load Google Maps API script
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBDDCT1y6vpC4jJ3_LGzRnMF6OclbkDEfU&libraries=geometry,drawing`;
-    script.onload = () => initMap();
-    document.head.appendChild(script);
+  const handleMapClick = ({x, y, lat, lng, event}) => {
+    // Handle map click event
+    // You can update the path state with the clicked coordinates
+    const newPath = [...path, { lat, lng }];
+    setPath(newPath);
+  };
 
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
+  const renderPolylines = (map, maps) => {
+    // Implement rendering polylines on the map using map and maps
+  };
 
-  const initMap = () => {
-    const google = window.google;
-    const mapOptions = {
-      center: { lat: -25.344, lng: 131.036 }, // Center of Australia
-      zoom: 4,
-      mapTypeId: viewOption === "Satellite" ? "satellite" : "roadmap",
-    };
-    const newMap = new google.maps.Map(
-      document.getElementById("map"),
-      mapOptions
-    );
-    setMap(newMap);
-
-    // Add drawing manager for routes
-    const drawingManager = new google.maps.drawing.DrawingManager({
-      drawingMode: google.maps.drawing.OverlayType.POLYLINE,
-      drawingControl: true,
-      drawingControlOptions: {
-        position: google.maps.ControlPosition.TOP_CENTER,
-        drawingModes: [google.maps.drawing.OverlayType.POLYLINE],
-      },
-      polylineOptions: {
-        clickable: true,
-        editable: true,
-        strokeColor: "#FF0000",
-      },
-    });
-    drawingManager.setMap(newMap);
-
-    // Add event listeners for drawing manager
-    google.maps.event.addListener(
-      drawingManager,
-      "overlaycomplete",
-      (event) => {
-        if (event.type === google.maps.drawing.OverlayType.POLYLINE) {
-          const newRoute = event.overlay.getPath().getArray();
-          setRoutes([...routes, newRoute]);
-        //   const distance = calculateDistance(newRoute);
-        //   setTotalDistance(totalDistance + distance);
-        }
-      }
-    );
-
-    // Add event listener for click on map to mark points
-    google.maps.event.addListener(newMap, "click", (event) => {
-      const clickedLatLng = event.latLng;
-      setMarkedPoints([...markedPoints, clickedLatLng]);
-    });
+  const renderRoutesOnMap = (map, maps) => {
+    // Implement rendering routes on the map using map and maps
   };
 
   return (
-    <div className="map-container container">
-      <div id="map" className="rounded-3" style={{ height: "300px", width: "100%" }} />
+    <div style={{ height: "300px", width: "100%" }}>
+      <GoogleMapReact
+        bootstrapURLKeys={{ key: "AIzaSyCt6m1rrV32jEStp8x-cgBL0WwL9zXKOG4", libraries: ['places', 'directions'] }}
+        defaultCenter={{ lat: -25.0, lng: 133.0 }} // Centered in the middle of Australia
+        defaultZoom={5} // Adjust zoom level as needed
+        yesIWantToUseGoogleMapApiInternals
+        onGoogleApiLoaded={({ map, maps }) => {
+          setMap(map);
+          setMapsApi(maps);
+          renderPolylines(map, maps);
+          renderRoutesOnMap(map, maps); // Call the function to render routes with SVG markers
+        }}
+        onClick={handleMapClick}
+        options={{
+          draggableCursor: 'crosshair',
+          draggingCursor: 'move'
+        }}
+      >
+        {path.map((point, index) => (
+          <Marker key={index} lat={point.lat} lng={point.lng} />
+        ))}
+      </GoogleMapReact>
     </div>
   );
 };

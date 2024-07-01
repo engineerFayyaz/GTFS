@@ -21,6 +21,8 @@ import {
   getDoc,
   query,
   where,
+  orderBy,
+  limit,
 } from "firebase/firestore"; // Import the Firestore database
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
@@ -37,6 +39,7 @@ import FirestoreDataDownloader from "../../Components/FirestoreDataDownloader";
 import useExportGTFS from "../../Components/ExportGTFS";
 import { AddTrip } from "./components/AddTrip";
 import AddRouteMap from "../../Components/Agencies/AddRouteMap";
+import MapingRoutes from "../../Components/MapingRoutes";
 
  const Agnecies = () => {
   const { id } = useParams(); // Get the id parameter from the URL
@@ -127,13 +130,13 @@ import AddRouteMap from "../../Components/Agencies/AddRouteMap";
       }));
       // setCompanyInfo(companyList);
       setRoutes(routesData);
-
-      console.log("Routes created by users are ", routesData);
     } catch (error) {
       console.error("Error fetching routes:", error);
       toast.error("Error fetching routes: ", error);
     }
   };
+
+  console.log("routes inside the agency",routes)
 
   if (loading) {
     return <Loader />;
@@ -146,46 +149,58 @@ import AddRouteMap from "../../Components/Agencies/AddRouteMap";
       [name]: value,
     });
   };
-
+  
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     try {
-      setLoading(true);
-      if (!currentUser) {
-        toast.error("Please login to add/update routes.");
-        return;
-      }
+        setLoading(true);
+        if (!currentUser) {
+            toast.error("Please login to add/update routes.");
+            return;
+        }
 
-      const routeData = {
-        ...formData,
-        userId: currentUser.uid, // Include the userId
-      };
+        // Fetch all shapes
+        const shapeCollectionRef = collection(db, "shapes");
+        const shapeSnapshot = await getDocs(shapeCollectionRef);
+        const allShapes = shapeSnapshot.docs.map(doc => doc.data());
 
-      if (editMode) {
-        // Update existing route
-        await updateDoc(doc(db, "agencies_routes_data", editId), routeData);
-        setTimeout(() => {
-          toast.success("Route updated successfully");
-        }, 1000);
-      } else {
-        // Add new route
-        const docRef = await addDoc(
-          collection(db, "agencies_routes_data"),
-          routeData
-        );
-        setTimeout(() => {
-          toast.success("Route added successfully");
-        }, 1000);
-      }
-      fetchRoutes(currentUser.uid); // Refresh the routes list
-      handleClose();
+        let shape_id;
+
+        // Find the shape matching the routeShortName
+        const matchingShape = allShapes.find(shape => shape.routeShortName === formData.routeShortName);
+
+        if (matchingShape) {
+            shape_id = matchingShape.shape_id;
+        } else {
+            // If no matching shape, get any shape_id from the Firestore collection
+            if (allShapes.length > 0) {
+                // Select the first shape_id found
+                shape_id = allShapes[0].shape_id;
+            } else {
+                throw new Error("No shapes available in the collection.");
+            }
+        }
+
+        // Save the route data with shape_id in firestore
+        await addDoc(collection(db, "agencies_routes_data"), {
+            ...formData,
+            userId: currentUser.uid,
+            shape_id: shape_id
+        });
+
+        toast.success("Route added successfully");
+
+        // Refresh routes list
+        fetchRoutes(currentUser.uid);
+        handleClose();
     } catch (error) {
-      console.error("Error adding/updating route: ", error);
-      alert("Failed to add/update route");
+        console.error("Error adding/updating route: ", error);
+        toast.error(error.message); // Display the error message using toast
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
+
 
   const handleEdit = (route) => {
     setEditMode(true);
@@ -382,7 +397,7 @@ import AddRouteMap from "../../Components/Agencies/AddRouteMap";
               <AddServices />
             </Tab>
             <Tab eventKey="route_map" title="Route Map">
-              <AddRouteMap />
+              <MapingRoutes />
             </Tab>
             <Tab eventKey="optional_data" title="Optional Data">
               <OptionalData />

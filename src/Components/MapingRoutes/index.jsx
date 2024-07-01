@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import GoogleMapReact from 'google-map-react';
-import { getFirestore, collection, getDocs, addDoc} from 'firebase/firestore';
+import { getFirestore, collection, getDocs, addDoc, writeBatch, doc } from 'firebase/firestore';
 import FileSaver from 'file-saver';
 import { Container, Form, Button, Row, Col, Card, InputGroup, FormControl } from 'react-bootstrap';
 import Marker from '../Marker';
 import './MapingRoutes.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMapMarkerAlt,faMapMarker } from '@fortawesome/free-solid-svg-icons';
+import { toast } from 'react-toastify';
+
 
 function MapingRoutes() {
   const [path, setPath] = useState([]);
@@ -19,6 +23,76 @@ function MapingRoutes() {
   const [mapsApi, setMapsApi] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [isLoop, setIsLoop] = useState(false);
+  const [center, setCenter] = useState({ lat: 6.5244, lng: 3.3792 });
+  const [zoom, setZoom] = useState(15);
+
+
+  useEffect(() => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setCenter({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      });
+    } else {
+      console.error('Geolocation is not available');
+    }
+  }, []);
+  const searchLocation = (term) => {
+    if (mapsApi && map && term) {
+      const service = new mapsApi.places.PlacesService(map);
+      const request = {
+        query: term,
+        fields: ['name', 'geometry'],
+      };
+      service.findPlaceFromQuery(request, (results, status) => {
+        if (status === mapsApi.places.PlacesServiceStatus.OK && results) {
+          const place = results[0];
+          const { lat, lng } = place.geometry.location;
+          setSuggestions([{ lat: lat(), lng: lng() }]);
+          map.setCenter({ lat: lat(), lng: lng() });
+          map.setZoom(15);
+        }
+      });
+    }
+  };
+
+  const fetchSuggestions = (term) => {
+    if (mapsApi && term) {
+      const service = new mapsApi.places.AutocompleteService();
+      service.getPlacePredictions({ input: term }, (predictions, status) => {
+        if (status === mapsApi.places.PlacesServiceStatus.OK && predictions) {
+          setSuggestions(predictions);
+        } else {
+          setSuggestions([]);
+        }
+      });
+    }
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    searchLocation(searchTerm);
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    const service = new mapsApi.places.PlacesService(map);
+    const request = {
+      placeId: suggestion.place_id,
+      fields: ['name', 'geometry'],
+    };
+    service.getDetails(request, (place, status) => {
+      if (status === mapsApi.places.PlacesServiceStatus.OK) {
+        const { lat, lng } = place.geometry.location;
+        setSearchTerm(suggestion.description);
+        setSuggestions([]);
+        map.setCenter({ lat: lat(), lng: lng() });
+        map.setZoom(15);
+      }
+    });
+  };
+
 
   const db = getFirestore();
 
@@ -57,45 +131,50 @@ function MapingRoutes() {
     return distance / 1000; // in kilometers
   };
 
-    const fetchRoutesFromFirestore = async () => {
-    const querySnapshotShapes = await getDocs(collection(db, 'shapes'));
-    const querySnapshotShapes2 = await getDocs(collection(db, 'shapes2'));
-    const routesData = [];
-
-    querySnapshotShapes.forEach(doc => {
-      const data = doc.data();
-      routesData.push(data);
-    });
-
-    querySnapshotShapes2.forEach(doc => {
-      const data = doc.data();
-      routesData.push(data);
-    });
-
-    setRoutes(routesData);
-  };
-  
-  useEffect(() => {
-    fetchRoutesFromFirestore();
-  }, [db]);
-
-
   const renderRoutesOnMap = (map, maps) => {
-    routes.forEach(route => {
-      const routeCoordinates = route.map(point => ({
-        lat: parseFloat(point.shape_pt_lat),
-        lng: parseFloat(point.shape_pt_lon)
-      }));
-      const routePath = new maps.Polyline({
-        path: routeCoordinates,
-        geodesic: true,
-        strokeColor: '#FF0000',
-        strokeOpacity: 0.8,
-        strokeWeight: 2,
+    if (map && maps && routes.length > 0) {
+      const bounds = new maps.LatLngBounds(); // Create bounds object to include all markers
+
+      routes.forEach((route, index) => {
+        if (Array.isArray(route)) {
+          route.forEach((point, idx) => {
+            const markerIcon = {
+              path: FontAwesomeIcon ? FontAwesomeIcon(faMapMarker).html.join('') : '', // Get FontAwesome icon SVG path
+              fillColor: '#FF0000', // Fill color of the icon
+              fillOpacity: 1, // Opacity of the icon
+              anchor: new maps.Point(12, 24), // Icon anchor point
+              scale: 0.5, // Icon scale
+              strokeWeight: 0, // Stroke weight of the icon
+              labelOrigin: new maps.Point(12, 12) // Label origin point
+            };
+
+            const marker = new maps.Marker({
+              position: { lat: parseFloat(point.shape_pt_lat), lng: parseFloat(point.shape_pt_lon) },
+              map: map,
+              icon: markerIcon // Set the icon for the marker
+            });
+
+            // Extend bounds to include marker's position
+            bounds.extend(marker.getPosition());
+
+            // Optionally, add event listeners to markers
+            marker.addListener('click', () => {
+              // Handle marker click event
+            });
+          });
+        } else {
+          console.error('Expected route to be an array but got:', route);
+        }
       });
-      routePath.setMap(map);
-    });
+
+      // Zoom the map to fit all markers within the bounds
+      if (routes.length > 0) {
+        map.fitBounds(bounds);
+      }
+    }
   };
+
+
 
 
   const renderRoutesFromFirestore = () => {
@@ -108,27 +187,94 @@ function MapingRoutes() {
       </Card>
     ));
   };
-
   const handleDisplayRoute = (route) => {
-    const routePath = route.map(point => ({ lat: parseFloat(point.shape_pt_lat), lng: parseFloat(point.shape_pt_lon) }));
-    setPath(routePath);
-    calculateDistance(routePath);
+    if (Array.isArray(route)) {
+      const routePath = route.map(point => ({
+        lat: parseFloat(point.shape_pt_lat),
+        lng: parseFloat(point.shape_pt_lon)
+      }));
+      setPath(routePath);
+      calculateDistance(routePath);
+    } else {
+      console.error('Expected route to be an array but got:', route);
+    }
+  };
+  const generateRouteId = (title) => {
+    return `${title}-${Date.now()}`;
+  };
+  const saveRoute = async () => {
+    try {
+      // Add the route to the 'routes' collection with auto-generated ID
+      const routeRef = await addDoc(collection(db, 'routes'), { path, title, description });
+      const routeId = routeRef.id;
+
+      let totalDistance = 0;
+      const routeData = path.map((point, index) => {
+        if (index > 0) {
+          totalDistance += haversineDistance(path[index - 1], point);
+        }
+        return {
+          shape_id: routeId, // using routeId as the shape_id for linking
+          shape_pt_lat: point.lat.toString(), // latitude as string
+          shape_pt_lon: point.lng.toString(), // longitude as string
+          shape_pt_sequence: (index + 1).toString(), // sequence as string
+          shape_dist_traveled: totalDistance.toFixed(4) // distance traveled as string
+        };
+      });
+
+      // Save the data to the 'shapes' collection using a batch
+      const batch = writeBatch(db);
+      routeData.forEach(point => {
+        const shapeRef = doc(collection(db, 'shapes'));
+        batch.set(shapeRef, point);
+      });
+      await batch.commit();
+
+      // Save the data to the 'shapes2' collection using a batch with auto-generated IDs
+      const batch2 = writeBatch(db);
+      routeData.forEach(point => {
+        const shape2Ref = doc(collection(db, 'shapes2'));
+        batch2.set(shape2Ref, point);
+      });
+      await batch2.commit();
+
+      // Save shape_id to the 'routes2' collection with auto-generated ID
+      const route2Data = {
+        routeId: routeId,
+        shape_id: routeId, // ensure that shape_id in routes2 matches the one used in shapes2
+        title: title,
+        description: description
+      };
+      await addDoc(collection(db, 'routes2'), route2Data);
+
+      // Retrieve data from 'agencies_routes_data' collection
+      const agenciesRoutesSnapshot = await getDocs(collection(db, 'agencies_routes_data'));
+      agenciesRoutesSnapshot.forEach(doc => {
+        const data = doc.data();
+        // Save data to 'routes2' collection
+        addDoc(collection(db, 'routes2'), data);
+      });
+
+      // Generate the text file content
+      const headers = "shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence,shape_dist_traveled";
+      const shapeText = routeData.map(point =>
+        `${point.shape_id},${point.shape_pt_lat},${point.shape_pt_lon},${point.shape_pt_sequence},${point.shape_dist_traveled}`
+      ).join('\n');
+      const fileContent = `${headers}\n${shapeText}`;
+
+      // Save the text file
+      const blob = new Blob([fileContent], { type: 'text/plain' });
+      FileSaver.saveAs(blob, 'shapes.txt');
+
+      // Show success toast messages
+      toast.success("Data saved successfully to shapes and shapes2 collections");
+      toast.success("Shape ID saved successfully to routes2 collection");
+    } catch (error) {
+      console.error('Error saving route:', error);
+      toast.error("Error saving data");
+    }
   };
 
-  const saveRoute = async () => {
-    await addDoc(collection(db, 'routes'), { path, title, description });
-    // Prepare data for routes.txt file
-    const routeData = path.map((point, index) => ({
-      shape_id: title,
-      shape_pt_lat: point.lat,
-      shape_pt_lon: point.lng,
-      shape_pt_sequence: index + 1,
-    }));
-    const shapeText = routeData.map(point => `${point.shape_id},${point.shape_pt_lat},${point.shape_pt_lon},${point.shape_pt_sequence}`).join('\n');
-    const blob = new Blob([shapeText], { type: 'text/plain' });
-    FileSaver.saveAs(blob, 'routes.txt');
-  };
-  
 
   const exportToGPX = () => {
     const gpxData = `
@@ -156,39 +302,21 @@ function MapingRoutes() {
     FileSaver.saveAs(blob, 'route.kml');
   };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    if (mapsApi && e.target.value) {
-      const service = new mapsApi.places.AutocompleteService();
-      service.getPlacePredictions({ input: e.target.value }, (predictions) => {
-        setSuggestions(predictions || []);
-      });
-    }
+  const handleApiLoaded = (map, maps) => {
+    setMap(map);
+    setMapsApi(maps);
+    renderRoutesOnMap(map, maps);
   };
 
-  const handleSuggestionClick = (suggestion) => {
-    if (mapsApi && map) {
-      const service = new mapsApi.places.PlacesService(map);
-      service.getDetails({ placeId: suggestion.place_id }, (result, status) => {
-        if (status === mapsApi.places.PlacesServiceStatus.OK) {
-          const location = result.geometry.location;
-          map.setCenter(location);
-          setPath([{ lat: location.lat(), lng: location.lng() }]);
-          setSearchTerm(result.name);
-          setSuggestions([]);
-        }
-      });
-    }
-  };
 
   const calculateRoute = () => {
-    if (path.length < 2) return;
+    if (!mapsApi || !map || path.length < 2) return; // Add null check for mapsApi and map
 
     const start = path[0];
     const end = path[path.length - 1];
     const waypoints = path.slice(1, -1).map(point => ({ location: point }));
 
-    const directionsService = new mapsApi.DirectionsService();
+    const directionsService = new mapsApi.DirectionsService(); // Add null check for mapsApi
     const directionsRenderer = new mapsApi.DirectionsRenderer();
     directionsRenderer.setMap(map);
 
@@ -215,6 +343,7 @@ function MapingRoutes() {
     );
   };
 
+
   const handleUndoLastLeg = () => {
     setPath((currentPath) => {
       const newPath = currentPath.slice(0, -1);
@@ -227,39 +356,34 @@ function MapingRoutes() {
     setPath([]);
     setDistance(0);
   };
-
-  const handleMapTypeChange = (type) => {
-    setMapType(type);
-    if (map) {
-      map.setMapTypeId(type);
-    }
-  };
-
-  const handleRouteClick = (routePath) => {
-    setPath(routePath);
-    calculateDistance(routePath);
-  };
-
   const renderPolylines = (map, maps) => {
-    routes.forEach(route => {
-      new maps.Polyline({
-        path: route,
-        geodesic: true,
-        strokeColor: '#FF0000',
-        strokeOpacity: 0.8,
-        strokeWeight: 2,
-        map: map,
-      });
+    routes.forEach((route, index) => {
+      if (Array.isArray(route)) {
+        const routeCoordinates = route.map(point => ({
+          lat: parseFloat(point.shape_pt_lat),
+          lng: parseFloat(point.shape_pt_lon)
+        }));
+
+        new maps.Polyline({
+          path: routeCoordinates,
+          geodesic: true,
+          strokeColor: '#FF0000',
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          map: map,
+        });
+      } else {
+        console.error('Expected route to be an array but got:', route);
+      }
     });
   };
 
   return (
     <Container>
-     
+
       <Row className="my-4">
-        <h2 className='text-center'>Add Route Map</h2>
-        <Col variant="12">
-          <Card className="custom-card mapping-routes">
+        <Col className="col-lg-8 mx-auto">
+          <Card className="custom-card">
             <Card.Body>
               <Form>
                 <Form.Group controlId="routeTitle" className="custom-form-group">
@@ -283,15 +407,12 @@ function MapingRoutes() {
                     onChange={(e) => setDescription(e.target.value)}
                   />
                 </Form.Group>
-                <Row>
-                  <Col>
-                  <Form.Group controlId="mapType" className="custom-form-group">
-                  <Form.Label className='d-block'>Map Type</Form.Label>
+                <Form.Group controlId="mapType" className="custom-form-group">
+                  <Form.Label>Map Type</Form.Label>
                   <Form.Control
                     as="select"
                     value={mapType}
-                    className='w-100'
-                    onChange={(e) => handleMapTypeChange(e.target.value)}
+                    onChange={(e) => setMapType(e.target.value)}
                   >
                     <option value="roadmap">Map</option>
                     <option value="satellite">Satellite</option>
@@ -299,14 +420,11 @@ function MapingRoutes() {
                     <option value="hybrid">Hybrid</option>
                   </Form.Control>
                 </Form.Group>
-                  </Col>
-                  <Col>
-                  <Form.Group controlId="travelMode" className="custom-form-group">
-                  <Form.Label className='d-block'>Travel Mode</Form.Label>
+                <Form.Group controlId="travelMode" className="custom-form-group">
+                  <Form.Label>Travel Mode</Form.Label>
                   <Form.Control
                     as="select"
                     value={travelMode}
-                    className='w-100'
                     onChange={(e) => setTravelMode(e.target.value)}
                   >
                     <option value="WALKING">Walking</option>
@@ -315,14 +433,11 @@ function MapingRoutes() {
                     <option value="TRANSIT">Transit</option>
                   </Form.Control>
                 </Form.Group>
-                  </Col>
-                </Row>
-               
-               
-                <Form.Group controlId="loopRoute" className="custom-form-group d-block">
-                  <Form.Check
-                    type="checkbox"
+                <Form.Group controlId="loopRoute" className="custom-form-group" style={{ width: "200px" }}>
+                  <Form.Check style={{ width: "10px", marginLeft: "44px" }}
+
                     label="Loop Route"
+                    type="checkbox"
                     checked={isLoop}
                     onChange={(e) => setIsLoop(e.target.checked)}
                   />
@@ -332,18 +447,27 @@ function MapingRoutes() {
           </Card>
         </Col>
       </Row>
+
       <Row className="my-4">
-        <h3 className='text-center'>Search Route</h3>
-        <Col>
-          <InputGroup className="mb-3 custom-input-group">
-            <FormControl
-              placeholder="Search routes"
-              aria-label="Search routes"
-              value={searchTerm}
-              onChange={handleSearchChange}
-            />
-            <Button variant="outline-secondary" className="custom-button">Search</Button>
-          </InputGroup>
+        <Col className='col-lg-8 mx-auto'>
+          <Form onSubmit={handleSearchSubmit}>
+            <Form.Group as={Row} controlId="searchTerm">
+              <Col sm={8} style={{width:"100%"}}>
+                <InputGroup>
+                  <FormControl
+                    type="text"
+                    placeholder="Search for a location"
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      fetchSuggestions(e.target.value);
+                    }}
+                  />
+                  <Button type="submit">Search</Button>
+                </InputGroup>
+              </Col>
+            </Form.Group>
+          </Form>
           {suggestions.length > 0 && (
             <div className="suggestions-container">
               {suggestions.map((suggestion) => (
@@ -363,22 +487,32 @@ function MapingRoutes() {
         <Col style={{ height: '500px' }}>
           <GoogleMapReact
             bootstrapURLKeys={{ key: "AIzaSyCt6m1rrV32jEStp8x-cgBL0WwL9zXKOG4", libraries: ['places', 'directions'] }}
-            defaultCenter={{ lat: 41.9028, lng: 12.4964 }}
-            defaultZoom={10}
+            defaultCenter={{ lat: -25.0, lng: 133.0 }} // Centered in the middle of Australia
+            center={center}
+            zoom={zoom}
+            defaultZoom={5} // Adjust zoom level as needed
             yesIWantToUseGoogleMapApiInternals
             onGoogleApiLoaded={({ map, maps }) => {
               setMap(map);
               setMapsApi(maps);
               renderPolylines(map, maps);
+              renderRoutesOnMap(map, maps); // Call the function to render routes with SVG markers
             }}
+
+
             onClick={handleMapClick}
             options={{
               draggableCursor: 'crosshair',
               draggingCursor: 'move'
             }}
           >
+            <Marker
+              lat={center.lat}
+              lng={center.lng}
+              text="You are here"
+            />
             {path.map((point, index) => (
-              <Marker key={index} lat={point.lat} lng={point.lng} />
+              <FontAwesomeIcon icon={faMapMarkerAlt} style={{ color: 'red' }} size="2x" />
             ))}
           </GoogleMapReact>
         </Col>
@@ -401,24 +535,11 @@ function MapingRoutes() {
                 <strong>Total Distance:</strong> {distance.toFixed(2)} km
               </Card.Text>
             </Card.Body>
-            <Card.Footer className=' saves-btns d-flex align-items-center justify-content-evenly'>
-            <Button variant="primary" onClick={saveRoute}>Save Route</Button>
-          <Button variant="info" onClick={exportToGPX}>Export to GPX</Button>
-          <Button variant="dark" onClick={exportToKML}>Export to KML</Button>
-          <Button variant="warning" onClick={handleUndoLastLeg}>Undo Last Leg</Button>
-          <Button variant="danger" onClick={handleRemoveAll}>Remove All</Button>
-            </Card.Footer>
           </Card>
         </Col>
-        
       </Row>
-      {/* <Row>
-        <Col>
-          {renderRoutesFromFirestore()}
-        </Col>
-      </Row> */}
     </Container>
   );
 }
 
-export default MapingRoutes;
+        export default MapingRoutes;
