@@ -225,7 +225,7 @@ function MapingRoutes() {
       // Save the data to the 'shapes' collection using a batch
       const batch = writeBatch(db);
       routeData.forEach(point => {
-        const shapeRef = doc(collection(db, 'shapes'));
+        const shapeRef = doc(collection(db, 'shapes2'));
         batch.set(shapeRef, point);
       });
       await batch.commit();
@@ -512,7 +512,7 @@ function MapingRoutes() {
               text="You are here"
             />
             {path.map((point, index) => (
-              <FontAwesomeIcon icon={faMapMarkerAlt} style={{ color: 'red' }} size="2x" />
+              <FontAwesomeIcon style={{ color: 'red' }} size="2x" />
             ))}
           </GoogleMapReact>
         </Col>
